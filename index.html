@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake 3D Clásico — Tablero de Arena</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <!-- Lienzo WebGL 3D -->
+    <div id="canvas-container"></div>
+
+    <!-- HUD SUPERIOR EN TIEMPO REAL (ESTILO GOOGLE SNAKE) -->
+    <div class="hud-container">
+        <div class="hud-panel">
+            <div class="hud-item">
+                <span class="hud-icon">🍎</span>
+                <div class="hud-meta">
+                    <span class="hud-label">Manzanas</span>
+                    <span id="hud-score" class="hud-value apple-val">0</span>
+                </div>
+            </div>
+
+            <div class="hud-item">
+                <span class="hud-icon">🏆</span>
+                <div class="hud-meta">
+                    <span class="hud-label">Récord</span>
+                    <span id="hud-high-score" class="hud-value gold-val">0</span>
+                </div>
+            </div>
+
+            <div class="hud-item">
+                <span class="hud-icon">📏</span>
+                <div class="hud-meta">
+                    <span class="hud-label">Longitud</span>
+                    <span id="hud-length" class="hud-value">3</span>
+                </div>
+            </div>
+
+            <div class="hud-item">
+                <span class="hud-icon">⚡</span>
+                <div class="hud-meta">
+                    <span class="hud-label">Velocidad</span>
+                    <span id="hud-speed" class="hud-value">10%</span>
+                </div>
+            </div>
+
+            <div class="hud-item">
+                <span class="hud-icon">🧭</span>
+                <div class="hud-meta">
+                    <span class="hud-label">Dirección</span>
+                    <span id="hud-dir" class="hud-value">Derecha</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud-controls">
+            <button id="btn-cam" class="hud-btn" title="Alternar Cámara [C]">
+                🎥 <span id="hud-cam-mode">3D CENITAL</span>
+            </button>
+            <button id="btn-sound" class="hud-btn" title="Activar/Desactivar Sonido">
+                <span id="sound-icon">🔊</span>
+            </button>
+            <button id="btn-pause" class="hud-btn" title="Pausar Juego [P / ESC]">
+                ⏸️ Pausa
+            </button>
+        </div>
+    </div>
+
+    <!-- BADGE FLOTANTE DE INMUNIDAD (MANZANA AZUL / POWER-UP) -->
+    <div id="hud-immunity" class="hud-immunity-badge hidden">
+        <span class="immunity-icon">⚡</span>
+        <div class="immunity-text">
+            <span class="immunity-label">¡INMUNIDAD ACTIVA!</span>
+            <span class="immunity-countdown"><span id="immunity-timer">2.0</span>s</span>
+        </div>
+    </div>
+
+    <!-- GUÍA DE CONTROLES EN PANTALLA -->
+    <div class="keyboard-guide">
+        <div class="key-row">
+            <span class="kbd-badge">W / ↑</span> Arriba
+            <span class="kbd-badge">S / ↓</span> Abajo
+        </div>
+        <div class="key-row">
+            <span class="kbd-badge">A / ←</span> Izquierda
+            <span class="kbd-badge">D / →</span> Derecha
+        </div>
+        <div class="key-row">
+            <span class="kbd-badge">C</span> Cámara | <span class="kbd-badge">P</span> Pausa
+        </div>
+    </div>
+
+    <!-- PAD DIRECCIONAL 2D EN PANTALLA (4 BOTONES) -->
+    <div class="dpad-container">
+        <span class="dpad-title">Control</span>
+        <div class="dpad-cross">
+            <button id="btn-dir-up" class="dpad-btn dpad-up" title="Arriba">▲</button>
+            <button id="btn-dir-left" class="dpad-btn dpad-left" title="Izquierda">◀</button>
+            <button id="btn-dir-right" class="dpad-btn dpad-right" title="Derecha">▶</button>
+            <button id="btn-dir-down" class="dpad-btn dpad-down" title="Abajo">▼</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE INICIO -->
+    <div id="start-screen" class="overlay-modal">
+        <div class="modal-card">
+            <h1 class="game-title">🐍 Snake 3D</h1>
+            <p class="game-subtitle">El juego clásico con tablero de arena, gusano verde y manzanas 3D</p>
+
+            <div class="modal-stats" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                <div class="stat-box">
+                    <span class="label">Tablero Plano</span>
+                    <span class="val">18 × 18</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">Mejor Récord</span>
+                    <span id="start-high-score" class="val" style="color: var(--gold);">0</span>
+                </div>
+            </div>
+
+            <div style="font-size: 0.95rem; color: #475569; line-height: 1.6; margin-bottom: 24px; text-align: left; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 14px 18px;">
+                <p style="margin: 0 0 8px 0;">🎮 <strong>Controles:</strong> WASD / Flechas / Pad en pantalla. <strong>[C]</strong> Cámara, <strong>[P]</strong> Pausa.</p>
+                <p style="margin: 0 0 6px 0;">🍎 <strong>Manzana Roja:</strong> +1 punto y la serpiente crece.</p>
+                <p style="margin: 0 0 6px 0;">⚡ <strong>Manzana Azul (Power-Up):</strong> +2 puntos e <strong>Inmunidad de 2 segundos</strong> con contador en vivo. ¡El gusano se vuelve transparente, atraviesa su cuerpo y se teletransporta por las paredes estilo Nokia!</p>
+                <p style="margin: 0;">⭐ <strong>Manzana Dorada:</strong> +3 puntos (Bonus por tiempo limitado).</p>
+            </div>
+
+            <button id="btn-start" class="btn-primary">▶ ¡JUGAR!</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE GAME OVER -->
+    <div id="game-over-screen" class="overlay-modal hidden">
+        <div class="modal-card">
+            <h1 class="game-title" style="color: #dc2626;">💥 ¡Fin del Juego!</h1>
+            <div id="go-cause" class="cause-badge">¡Chocaste contra las paredes!</div>
+
+            <div class="modal-stats">
+                <div class="stat-box">
+                    <span class="label">Manzanas</span>
+                    <span id="go-final-score" class="val" style="color: #ef4444;">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">Récord</span>
+                    <span id="go-high-score" class="val" style="color: #f59e0b;">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">Longitud</span>
+                    <span id="go-length" class="val">0</span>
+                </div>
+            </div>
+
+            <button id="btn-restart" class="btn-primary">🔄 Jugar de Nuevo [Enter]</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE PAUSA -->
+    <div id="pause-screen" class="overlay-modal hidden">
+        <div class="modal-card">
+            <h1 class="game-title">⏸️ Pausa</h1>
+            <p class="game-subtitle">Tómate un respiro</p>
+
+            <button id="btn-resume" class="btn-primary" style="margin-top: 10px;">▶ Continuar [P]</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS MODULARES -->
+    <script src="js/constants.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/food.js"></script>
+    <script src="js/snake.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+        const hs = localStorage.getItem('snake3d_classic_highscore') || '0';
+        document.getElementById('start-high-score').textContent = hs;
+    </script>
+</body>
+</html>
