@@ -31,49 +31,53 @@ class FoodManager {
     }
 
     initMaterials() {
-        // Rojo manzana llamativo y brillante
+        // Rojo manzana llamativo, súper jugoso y brillante
         this.appleMaterial = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.APPLE_RED,
-            roughness: 0.25,
-            metalness: 0.1
+            roughness: 0.18,
+            metalness: 0.05,
+            emissive: 0x440011,
+            emissiveIntensity: 0.25
         });
 
-        // Tallo café
+        // Tallo café chocolate
         this.stemMaterial = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.APPLE_STEM,
-            roughness: 0.8
+            roughness: 0.75
         });
 
         // Hojita verde viva
         this.leafMaterial = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.APPLE_LEAF,
-            roughness: 0.3,
+            roughness: 0.25,
+            emissive: 0x004411,
+            emissiveIntensity: 0.2,
             side: THREE.DoubleSide
         });
 
-        // Manzana dorada especial
+        // Manzana dorada radiante especial
         this.bonusMaterial = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.APPLE_GOLD,
-            roughness: 0.2,
-            metalness: 0.8,
+            roughness: 0.15,
+            metalness: 0.7,
             emissive: CONFIG.COLORS.APPLE_GOLD,
-            emissiveIntensity: 0.25
+            emissiveIntensity: 0.45
         });
 
         // Manzana azul eléctrica (Power-Up de Inmunidad)
         this.blueMaterial = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.APPLE_BLUE,
-            roughness: 0.15,
-            metalness: 0.5,
+            roughness: 0.12,
+            metalness: 0.4,
             emissive: CONFIG.COLORS.APPLE_BLUE_EMISSIVE,
-            emissiveIntensity: 0.55
+            emissiveIntensity: 0.75
         });
 
         this.blueLeafMaterial = new THREE.MeshStandardMaterial({
-            color: 0x38bdf8,
-            roughness: 0.2,
+            color: 0x00f5ff,
+            roughness: 0.18,
             emissive: 0x0284c7,
-            emissiveIntensity: 0.3,
+            emissiveIntensity: 0.45,
             side: THREE.DoubleSide
         });
     }

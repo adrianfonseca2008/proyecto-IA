@@ -39,21 +39,27 @@ class Snake3D {
         // Verde brillante y llamativo para la cabeza
         this.headMaterial = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.SNAKE_HEAD,
-            roughness: 0.35,
-            metalness: 0.1
+            roughness: 0.22,
+            metalness: 0.05,
+            emissive: 0x064e3b,
+            emissiveIntensity: 0.18
         });
 
-        // Verdes alternados para el cuerpo
+        // Verdes alternados vibrantes para el cuerpo
         this.bodyMaterialA = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.SNAKE_BODY_A,
-            roughness: 0.35,
-            metalness: 0.1
+            roughness: 0.25,
+            metalness: 0.05,
+            emissive: 0x065f46,
+            emissiveIntensity: 0.12
         });
 
         this.bodyMaterialB = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.SNAKE_BODY_B,
-            roughness: 0.35,
-            metalness: 0.1
+            roughness: 0.25,
+            metalness: 0.05,
+            emissive: 0x064e3b,
+            emissiveIntensity: 0.12
         });
 
         // Ojos saltones blancos

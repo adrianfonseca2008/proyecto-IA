@@ -3,20 +3,20 @@
    ==================================================================== */
 
 :root {
-    --sky-blue: #7dd3fc;
-    --cardboard-bg: #dcb285;
-    --sand-bg: #dcb285;
-    --forest-green: #489d74;
-    --snake-green: #22c55e;
-    --snake-dark: #15803d;
-    --apple-red: #ef4444;
-    --gold: #f59e0b;
+    --sky-blue: #38bdf8;
+    --cardboard-bg: #deb887;
+    --sand-bg: #deb887;
+    --forest-green: #22c55e;
+    --snake-green: #10b981;
+    --snake-dark: #059669;
+    --apple-red: #ff1744;
+    --gold: #ffb703;
     --wall-terracotta: #ea580c;
-    --text-dark: #1e293b;
-    --text-muted: #64748b;
-    --card-bg: rgba(255, 255, 255, 0.94);
-    --card-border: rgba(255, 255, 255, 0.7);
-    --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.15), 0 2px 8px rgba(15, 23, 42, 0.08);
+    --text-dark: #0f172a;
+    --text-muted: #475569;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-border: rgba(255, 255, 255, 0.85);
+    --card-shadow: 0 14px 40px rgba(15, 23, 42, 0.16), 0 3px 10px rgba(15, 23, 42, 0.08);
 }
 
 * {

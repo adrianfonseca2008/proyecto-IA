@@ -36,13 +36,15 @@ class GameEngine {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(CONFIG.COLORS.SKY);
-        this.scene.fog = new THREE.Fog(CONFIG.COLORS.FOG, 50, 130);
+        this.scene.fog = new THREE.Fog(CONFIG.COLORS.FOG, 60, 160);
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.15;
 
         container.appendChild(this.renderer.domElement);
 

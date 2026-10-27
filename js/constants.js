@@ -28,70 +28,95 @@ const CONFIG = {
     BLUE_LIFETIME_TICKS: 45,   // Ticks antes de que expire la manzana azul
     IMMUNITY_DURATION_SEC: 2.0,// Duración exacta de inmunidad: 2 segundos
 
-    // Paleta de Colores Vivos y Llamativos (Estilo Google Snake / Caja de Cartón en el Bosque)
+    // Paleta de Colores Super Vivos y Llamativos (Estilo Google Snake / Nintendo / Bosque Vibrante)
     COLORS: {
-        SKY: 0x7dd3fc,             // Azul cielo fresco y luminoso
-        FOG: 0xbae6fd,             // Niebla atmosférica suave de bosque
+        SKY: 0x38bdf8,             // Azul celeste radiante y cristalino
+        FOG: 0x7dd3fc,             // Niebla atmosférica suave y luminosa
         
-        // Caja de cartón (Tablero / Arena donde se mueve el gusanito - Estilo Imagen de referencia)
-        CARDBOARD_LIGHT: 0xc4935f, // Cartón kraft natural medio-claro (baldosas A)
-        CARDBOARD_DARK: 0xb78550,  // Cartón kraft cálido para patrón ajedrezado sutil (baldosas B)
-        CARDBOARD_BASE: 0x9f6d3a,  // Base inferior de la caja
-        CARDBOARD_WALL: 0xa87440,  // Paredes interiores y exteriores de cartón
-        CARDBOARD_RIM: 0x7a4d25,   // Borde superior corrugado del cartón
-        CARDBOARD_FLAP: 0xbf8b56,  // Solapas exteriores abiertas de la caja
-        CARDBOARD_SEAM: 0x6e431e,  // Líneas de pliegue y uniones del cartón
-        CARDBOARD_TAPE: 0xe8cfb0,  // Cinta adhesiva de embalaje (kraft clara / satinada)
+        // Caja de cartón (Tablero / Arena donde se mueve el gusanito)
+        CARDBOARD_LIGHT: 0xdeb887, // Cartón kraft dorado cálido luminoso (baldosas A)
+        CARDBOARD_DARK: 0xc99859,  // Cartón kraft cálido para patrón ajedrezado nítido (baldosas B)
+        CARDBOARD_BASE: 0xad7339,  // Base inferior de la caja
+        CARDBOARD_WALL: 0xba7f43,  // Paredes interiores y exteriores de cartón
+        CARDBOARD_RIM: 0x874e1d,   // Borde superior corrugado del cartón
+        CARDBOARD_FLAP: 0xd49b5f,  // Solapas exteriores abiertas de la caja
+        CARDBOARD_SEAM: 0x753e16,  // Líneas de pliegue y uniones del cartón
+        CARDBOARD_TAPE: 0xffeed6,  // Cinta adhesiva de embalaje con brillo satinado
         CARDBOARD_STAMP: 0x3d200a, // Tinta oscura para sellos en el cartón
 
         // Compatibilidad con referencias anteriores
-        SAND_LIGHT: 0xc4935f,
-        SAND_DARK: 0xb78550,
-        SAND_BORDER: 0x9f6d3a,
-        WALL_BASE: 0xa87440,
-        WALL_TOP: 0x7a4d25,
+        SAND_LIGHT: 0xdeb887,
+        SAND_DARK: 0xc99859,
+        SAND_BORDER: 0xad7339,
+        WALL_BASE: 0xba7f43,
+        WALL_TOP: 0x874e1d,
 
-        // Bosque exterior (Césped, vegetación, flores y árboles)
-        GRASS_GROUND: 0x489d74,    // Césped verde vivo de bosque
-        GRASS_DARK: 0x2d6a4f,      // Sombras de vegetación
-        GRASS_TUFT: 0x52b788,      // Mechones de hierba 3D
-        TREE_TRUNK: 0x78350f,      // Tronco de madera
-        TREE_LEAVES_A: 0x15803d,   // Copa de árbol verde bosque
-        TREE_LEAVES_B: 0x16a34a,   // Copa de árbol verde esmeralda
-        TREE_LEAVES_C: 0x10b981,   // Copa de árbol verde menta
-        BUSH_GREEN: 0x22c55e,      // Arbustos redondos
-        MUSHROOM_CAP: 0xef4444,    // Hongo rojo de bosque
-        MUSHROOM_STEM: 0xfef08a,   // Tallo de hongo crema
-        FLOWER_CENTER: 0xfacc15,   // Centro amarillo de flores
-        FLOWER_WHITE: 0xffffff,    // Margarita blanca
-        FLOWER_RED: 0xf43f5e,      // Flor amapola roja
-        FLOWER_BLUE: 0x38bdf8,     // Flor silvestre celeste
-        FLOWER_YELLOW: 0xfde047,   // Flor silvestre amarilla
-        FLOWER_PURPLE: 0xc084fc,   // Flor lavanda violeta
+        // Bosque exterior (Césped vibrante, flores vivas, árboles y vegetación)
+        GRASS_GROUND: 0x22c55e,    // Césped verde esmeralda super vivo y radiante
+        GRASS_DARK: 0x16a34a,      // Verde bosque profundo
+        GRASS_TUFT: 0x4ade80,      // Briznas de hierba verde lima brillante
+        GRASS_LIME: 0x86efac,      // Hierba verde claro radiante
         
-        // Serpiente 3D (Verde vivo Google Snake)
-        SNAKE_HEAD: 0x22c55e,      // Verde brillante vivo
-        SNAKE_HEAD_DARK: 0x16a34a,
-        SNAKE_BODY_A: 0x16a34a,    // Verde esmeralda vivo
-        SNAKE_BODY_B: 0x15803d,    // Verde bosque para patrón alternado
+        // Madera y Árboles
+        TREE_TRUNK: 0x78350f,      // Tronco de roble marrón cálido
+        TREE_BIRCH: 0xf8fafc,      // Tronco de abedul blanco puro
+        TREE_BIRCH_SPOT: 0x1e293b, // Motitas oscuras de abedul
+        TREE_LEAVES_A: 0x15803d,   // Verde bosque profundo
+        TREE_LEAVES_B: 0x22c55e,   // Verde manzana viva
+        TREE_LEAVES_C: 0x4ade80,   // Verde lima radiante
+        TREE_LEAVES_MINT: 0x10b981,// Verde menta / esmeralda
+        TREE_LEAVES_GOLD: 0xfbbf24,// Follaje dorado de sol
+        TREE_APPLE: 0xff1744,      // Manzanitas rojas colgando de los árboles
+        
+        // Elementos de la naturaleza
+        BUSH_GREEN: 0x16a34a,      // Arbustos redondos
+        BUSH_LIME: 0x22c55e,       // Arbusto verde vivo
+        BERRY_RED: 0xff1744,       // Bayas rojas brillantes en arbustos
+        BERRY_GOLD: 0xffd600,      // Bayas doradas
+        LOG_WOOD: 0x603813,        // Tronco caído de madera
+        MOSS_GREEN: 0x4ade80,      // Musgo verde en troncos y rocas
+        STONE_GRAY: 0x94a3b8,      // Piedras de río
+        CLOUD_WHITE: 0xffffff,     // Nubes esponjosas en el cielo
+        
+        // Hongos y Setas Mágicas
+        MUSHROOM_CAP_RED: 0xff1744,// Hongo rojo vivo
+        MUSHROOM_CAP_BLUE: 0x0ea5e9,// Hongo azul mágico
+        MUSHROOM_CAP_PURPLE: 0xa855f7,// Hongo violeta
+        MUSHROOM_STEM: 0xfffbeb,   // Tallo blanco crema
+        
+        // Flores silvestres hiper llamativas
+        FLOWER_CENTER: 0xffd600,   // Centro amarillo sol brillante
+        FLOWER_WHITE: 0xffffff,    // Margarita blanca pura
+        FLOWER_RED: 0xff0055,      // Amapola rojo carmesí vivo
+        FLOWER_BLUE: 0x00b4d8,     // Nomeolvides celeste neón
+        FLOWER_YELLOW: 0xffea00,   // Diente de león amarillo sol
+        FLOWER_PURPLE: 0xc084fc,   // Orquídea violeta brillante
+        FLOWER_ORANGE: 0xff7a00,   // Caléndula naranja vivo
+        FLOWER_PINK: 0xff3b94,     // Flor rosa fucsia vibrante
+        
+        // Serpiente 3D (Verde vivo Google Snake ultra llamativo)
+        SNAKE_HEAD: 0x10b981,      // Verde esmeralda vivo
+        SNAKE_HEAD_DARK: 0x059669,
+        SNAKE_BODY_A: 0x22c55e,    // Verde brillante
+        SNAKE_BODY_B: 0x16a34a,    // Verde vivo alternado
         SNAKE_EYES_WHITE: 0xffffff,// Ojos saltones blancos
         SNAKE_PUPIL: 0x0f172a,     // Pupila negra
-        SNAKE_TONGUE: 0xf43f5e,    // Lengüita rosa / roja
-        SNAKE_IMMUNE_GLOW: 0x38bdf8,// Resplandor cian eléctrico en inmunidad
+        SNAKE_TONGUE: 0xff0055,    // Lengüita rojo fresa viva
+        SNAKE_IMMUNE_GLOW: 0x00f5ff,// Resplandor cian eléctrico en inmunidad
         
-        // Manzanas 3D
-        APPLE_RED: 0xef4444,       // Rojo manzana vibrante
-        APPLE_STEM: 0x78350f,      // Tronquito café
-        APPLE_LEAF: 0x22c55e,      // Hoja verde viva
-        APPLE_GOLD: 0xfbbf24,      // Manzana dorada brillante
-        APPLE_BLUE: 0x0284c7,      // Azul eléctrico vibrante (Power-Up)
-        APPLE_BLUE_EMISSIVE: 0x38bdf8, // Brillo cian neón
+        // Manzanas 3D súper apetitosas y brillantes
+        APPLE_RED: 0xff1744,       // Rojo rubí saturado y brillante
+        APPLE_STEM: 0x5c2c0e,      // Tronquito café chocolate
+        APPLE_LEAF: 0x00e676,      // Hoja verde esmeralda brillante
+        APPLE_GOLD: 0xffb703,      // Oro radiante reluciente
+        APPLE_BLUE: 0x00b4d8,      // Azul cian eléctrico vibrante
+        APPLE_BLUE_EMISSIVE: 0x00f5ff, // Brillo cian neón intenso
         
         // Partículas
         PARTICLE_EAT: 0x22c55e,
-        PARTICLE_CRASH: 0xef4444,
-        PARTICLE_BLUE: 0x00f5ff,    // Chispas azules de power-up
-        PARTICLE_WARP: 0x38bdf8     // Destello de teletransporte
+        PARTICLE_CRASH: 0xff1744,
+        PARTICLE_BLUE: 0x00f5ff,
+        PARTICLE_WARP: 0x38bdf8
     },
 
     // Las 4 direcciones cardinales del Snake Clásico (en el plano X, Z)
