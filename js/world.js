@@ -1,27 +1,22 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - ENTORNO 3D: CAJA DE CARTÓN EN EL BOSQUE
+ * SNAKE 3D CLÁSICO - ENTORNO 3D: CAJA DE CARTÓN ABIERTA EN EL BOSQUE
  * ====================================================================
- * Transforma el tablero en el interior de una CAJA DE CARTÓN KRAFT
- * colocada en medio de un claro de BOSQUE soleado, con césped fresco,
- * flores silvestres de colores, setas rojas con motitas blancas, árboles
- * frondosos y pinos que se mecen suavemente con la brisa.
+ * Modela con precisión la CAJA DE CARTÓN KRAFT ABIERTA (según imagen de
+ * referencia), donde las 4 solapas (flaps) se abren 100% hacia afuera
+ * en cruz (horizontalmente / apoyadas hacia el césped exterior), dejando
+ * el interior de la arena y el gusanito COMPLETAMENTE DESPEJADOS Y VISIBLES.
  * 
- * Detalles de la caja de cartón:
- * - Suelo interior con cuadrícula ajedrezada en dos tonos kraft para
- *   máxima precisión de juego.
- * - Tiras de cinta adhesiva de embalaje cruzadas en la base.
- * - Sellos estampados (reciclaje, "THIS SIDE UP", frágil).
- * - 4 paredes de cartón corrugado con borde superior biselado.
- * - 4 solapas abiertas desplegadas hacia afuera cayendo sobre el césped.
- * - Etiqueta de envío con código de barras en una de las solapas.
+ * En el fondo exterior: bosque encantador con pradera de césped verde,
+ * decenas de flores silvestres de colores, setas rojas con motitas blancas
+ * y árboles frondosos y pinos que se mecen con una suave brisa.
  */
 
 class World3D {
     constructor(scene) {
         this.scene = scene;
         this.particles = [];
-        this.windSwayables = []; // Elementos del bosque que se mecen con el viento
+        this.windSwayables = []; // Flores y copas de árboles con brisa
 
         this.initLighting();
         this.initForestEnvironment();
@@ -30,24 +25,25 @@ class World3D {
     }
 
     initLighting() {
-        // Luz hemisférica: cielo azul fresco arriba, reflejo verde bosque abajo
+        // Luz hemisférica balanceada: cielo azul arriba, reflejo cálido/verde abajo
+        // Intensidad moderada (0.55) para evitar quemar o blanquear los colores del cartón
         const hemiLight = new THREE.HemisphereLight(
             CONFIG.COLORS.SKY,
             CONFIG.COLORS.GRASS_GROUND,
-            0.95
+            0.55
         );
         this.scene.add(hemiLight);
 
-        // Luz solar cálida direccional que arroja sombras nítidas y suaves
-        this.sunLight = new THREE.DirectionalLight(0xfffaed, 1.35);
-        this.sunLight.position.set(24, 38, 20);
+        // Luz solar cálida dorada pero natural (0.95)
+        this.sunLight = new THREE.DirectionalLight(0xfff6e5, 0.95);
+        this.sunLight.position.set(20, 36, 18);
         this.sunLight.castShadow = true;
         this.sunLight.shadow.mapSize.width = 2048;
         this.sunLight.shadow.mapSize.height = 2048;
         this.sunLight.shadow.camera.near = 1;
         this.sunLight.shadow.camera.far = 120;
 
-        const bound = (CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE) / 2 + 10;
+        const bound = (CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE) / 2 + 12;
         this.sunLight.shadow.camera.left = -bound;
         this.sunLight.shadow.camera.right = bound;
         this.sunLight.shadow.camera.top = bound;
@@ -57,32 +53,32 @@ class World3D {
         this.scene.add(this.sunLight);
 
         // Luz suave de relleno lateral
-        const fillLight = new THREE.DirectionalLight(0xc7d2fe, 0.42);
-        fillLight.position.set(-25, 20, -25);
+        const fillLight = new THREE.DirectionalLight(0xb2d6e8, 0.28);
+        fillLight.position.set(-22, 18, -22);
         this.scene.add(fillLight);
     }
 
     /**
      * ====================================================================
-     * 1. EL BOSQUE: CÉSPED, FLORES, SETAS Y ÁRBOLES
+     * 1. EL BOSQUE: CÉSPED, FLORES SILVESTRES, SETAS Y ÁRBOLES
      * ====================================================================
      */
     initForestEnvironment() {
         this.forestGroup = new THREE.Group();
 
-        // 1.1 Suelo de Césped Amplio
+        // 1.1 Manto de Césped Exterior Amplio
         const grassGeo = new THREE.BoxGeometry(170, 1.2, 170);
         const grassMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.GRASS_GROUND,
             roughness: 0.92,
-            metalness: 0.05
+            metalness: 0.04
         });
         const grassMesh = new THREE.Mesh(grassGeo, grassMat);
-        grassMesh.position.y = -0.72; // Justo por debajo de la base de la caja
+        grassMesh.position.y = -0.72;
         grassMesh.receiveShadow = true;
         this.forestGroup.add(grassMesh);
 
-        // 1.2 Mechoncitos de Hierba 3D cerca de la caja
+        // 1.2 Mechoncitos de Hierba 3D
         this.initGrassTufts();
 
         // 1.3 Flores Silvestres Coloridas
@@ -108,13 +104,10 @@ class World3D {
             roughness: 0.8
         });
 
-        const totalW = CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE;
-        const totalH = CONFIG.GRID_HEIGHT * CONFIG.CELL_SIZE;
-
-        // Repartir mechones alrededor de las paredes y solapas
-        for (let i = 0; i < 45; i++) {
+        // Repartir mechones por fuera de las solapas de la caja (radio > 21)
+        for (let i = 0; i < 48; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const dist = (totalW / 2 + 3.2) + Math.random() * 8.0;
+            const dist = 21.0 + Math.random() * 12.0;
             const x = Math.cos(angle) * dist;
             const z = Math.sin(angle) * dist;
 
@@ -122,7 +115,7 @@ class World3D {
             for (let b = 0; b < 3; b++) {
                 const blade = new THREE.Mesh(bladeGeo, tuftMat);
                 blade.position.set(
-                    (b - 1) * 0.07,
+                    (b - 1) * 0.08,
                     0.2,
                     (Math.random() - 0.5) * 0.06
                 );
@@ -163,13 +156,13 @@ class World3D {
         const petalGeo = new THREE.SphereGeometry(0.09, 6, 6);
         petalGeo.scale(1.3, 0.4, 0.8);
 
-        const totalW = CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE;
-        const count = 65; // Buen número para un bosque florecido
+        const count = 70;
 
         for (let i = 0; i < count; i++) {
             const flower = new THREE.Group();
             const angle = Math.random() * Math.PI * 2;
-            const dist = (totalW / 2 + 2.5) + Math.random() * 16.0;
+            // Distribuir fuera del alcance de las solapas abiertas (distancia > 21)
+            const dist = 21.2 + Math.random() * 16.0;
             const x = Math.cos(angle) * dist;
             const z = Math.sin(angle) * dist;
 
@@ -218,7 +211,7 @@ class World3D {
 
             flowerGroup.add(flower);
 
-            // Guardar para que se meza suavemente con el viento
+            // Guardar para mecerse suavemente con la brisa
             this.windSwayables.push({
                 object: head,
                 baseRotZ: head.rotation.z,
@@ -252,17 +245,14 @@ class World3D {
         const dotGeo = new THREE.SphereGeometry(0.045, 6, 6);
         const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
 
-        const totalW = CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE;
-        const totalH = CONFIG.GRID_HEIGHT * CONFIG.CELL_SIZE;
-
-        // Colocar pequeños grupitos de setas en las 4 esquinas de la caja de cartón
+        // Ubicaciones de grupitos de setas en los 4 rincones diagonales exteriores
         const clusters = [
-            { x: totalW / 2 + 2.2, z: totalH / 2 + 2.2 },
-            { x: -totalW / 2 - 2.2, z: totalH / 2 + 2.2 },
-            { x: totalW / 2 + 2.2, z: -totalH / 2 - 2.2 },
-            { x: -totalW / 2 - 2.2, z: -totalH / 2 - 2.2 },
-            { x: 0, z: totalH / 2 + 4.8 },
-            { x: 0, z: -totalH / 2 - 4.8 }
+            { x: 21.0, z: 21.0 },
+            { x: -21.0, z: 21.0 },
+            { x: 21.0, z: -21.0 },
+            { x: -21.0, z: -21.0 },
+            { x: 0, z: 22.5 },
+            { x: 0, z: -22.5 }
         ];
 
         clusters.forEach(c => {
@@ -270,19 +260,16 @@ class World3D {
             for (let k = 0; k < countInCluster; k++) {
                 const shroom = new THREE.Group();
 
-                // Tallo
                 const stem = new THREE.Mesh(stemGeo, stemMat);
                 stem.position.y = 0.2;
                 stem.castShadow = true;
                 shroom.add(stem);
 
-                // Sombrerito rojo abovedado
                 const cap = new THREE.Mesh(capGeo, capMat);
                 cap.position.y = 0.38;
                 cap.castShadow = true;
                 shroom.add(cap);
 
-                // Motitas blancas sobre el sombrero
                 const dotPositions = [
                     { x: 0, y: 0.32, z: 0 },
                     { x: 0.18, y: 0.22, z: 0.1 },
@@ -299,9 +286,9 @@ class World3D {
                 const scale = 0.7 + Math.random() * 0.55;
                 shroom.scale.set(scale, scale, scale);
                 shroom.position.set(
-                    c.x + (Math.random() - 0.5) * 1.6,
+                    c.x + (Math.random() - 0.5) * 1.8,
                     -0.12,
-                    c.z + (Math.random() - 0.5) * 1.6
+                    c.z + (Math.random() - 0.5) * 1.8
                 );
                 shroom.rotation.y = Math.random() * Math.PI * 2;
                 shroomGroup.add(shroom);
@@ -316,7 +303,6 @@ class World3D {
      */
     initTrees() {
         const treesGroup = new THREE.Group();
-        const totalW = CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE;
 
         const trunkMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.TREE_TRUNK,
@@ -336,11 +322,10 @@ class World3D {
             roughness: 0.55
         });
 
-        // 22 árboles colocados alrededor del claro (distancias de 19 a 45)
         const treeCount = 24;
         for (let i = 0; i < treeCount; i++) {
             const angle = (i / treeCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
-            const dist = (totalW / 2 + 6.0) + Math.random() * 24.0;
+            const dist = 24.0 + Math.random() * 26.0;
             const x = Math.cos(angle) * dist;
             const z = Math.sin(angle) * dist;
 
@@ -436,10 +421,10 @@ class World3D {
             treesGroup.add(tree);
         }
 
-        // Arbustos redondeados en los claros
+        // Arbustos redondeados
         for (let b = 0; b < 16; b++) {
             const angle = Math.random() * Math.PI * 2;
-            const dist = (totalW / 2 + 3.8) + Math.random() * 14.0;
+            const dist = 22.0 + Math.random() * 16.0;
             const bushGeo = new THREE.SphereGeometry(1.1 + Math.random() * 0.5, 8, 8);
             bushGeo.scale(1.3, 0.75, 1.1);
             const bushMat = new THREE.MeshStandardMaterial({
@@ -462,36 +447,40 @@ class World3D {
 
     /**
      * ====================================================================
-     * 2. LA CAJA DE CARTÓN: SUELO AJEDREZADO KRAFT, SOLAPAS Y SELLOS
+     * 2. LA CAJA DE CARTÓN KRAFT (ESTILO IMAGEN DE REFERENCIA)
      * ====================================================================
+     * La caja está completamente abierta. Las 4 solapas se extienden
+     * ÚNICAMENTE HACIA AFUERA (Norte hacia -Z, Sur hacia +Z, Oeste hacia -X,
+     * Este hacia +X). El interior del tablero y el gusanito quedan 100%
+     * visibles, libres y despejados.
      */
     initCardboardBox() {
         this.boxGroup = new THREE.Group();
 
         const tileSize = CONFIG.CELL_SIZE;
-        const totalW = CONFIG.GRID_WIDTH * tileSize;
-        const totalH = CONFIG.GRID_HEIGHT * tileSize;
+        const totalW = CONFIG.GRID_WIDTH * tileSize;  // 27.0
+        const totalH = CONFIG.GRID_HEIGHT * tileSize; // 27.0
 
-        // 2.1 Suelo interior de la caja (Baldosas de Cartón Kraft ajedrezadas)
+        // 2.1 Fondo interior de la caja (Cuadrícula kraft cálida con costura de solapas)
         this.initCardboardFloor(totalW, totalH, tileSize);
 
-        // 2.2 Base gruesa y cinta adhesiva de embalaje en la unión central
-        this.initCardboardBaseAndTape(totalW, totalH);
+        // 2.2 Base de soporte inferior
+        this.initCardboardBase(totalW, totalH);
 
-        // 2.3 Paredes de Cartón Corrugado 3D
+        // 2.3 Paredes de la caja de cartón (4 lados)
         this.initCardboardWalls(totalW, totalH);
 
-        // 2.4 Solapas abiertas de la caja (flaps) desplegadas hacia el césped
+        // 2.4 Las 4 Solapas abiertas desplegadas hacia afuera (según la imagen)
         this.initCardboardFlaps(totalW, totalH);
 
-        // 2.5 Sellos impresos ("THIS SIDE UP", Reciclaje) y Etiqueta de envío
-        this.initCardboardDetails(totalW, totalH);
+        // 2.5 Etiqueta de envío en una de las solapas exteriores
+        this.initShippingLabel(totalW, totalH);
 
         this.scene.add(this.boxGroup);
     }
 
     /**
-     * Suelo de Cartón Kraft ajedrezado (mantiene la cuadrícula nítida de Google Snake)
+     * Suelo interior de la caja de cartón (Baldosas kraft cálidas estilo imagen 2)
      */
     initCardboardFloor(totalW, totalH, tileSize) {
         const floorGroup = new THREE.Group();
@@ -499,16 +488,16 @@ class World3D {
         const matLight = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_LIGHT,
             roughness: 0.88,
-            metalness: 0.04
+            metalness: 0.02
         });
 
         const matDark = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_DARK,
             roughness: 0.88,
-            metalness: 0.04
+            metalness: 0.02
         });
 
-        // Baldosa con pequeña ranura entre casillas para perfecta lectura de juego
+        // Baldosas con sutil micro-ranura entre casillas
         const tileGeo = new THREE.BoxGeometry(tileSize * 0.985, 0.18, tileSize * 0.985);
 
         for (let x = 0; x < CONFIG.GRID_WIDTH; x++) {
@@ -519,7 +508,7 @@ class World3D {
                 const tile = new THREE.Mesh(tileGeo, mat);
                 tile.position.set(
                     (x - (CONFIG.GRID_WIDTH - 1) / 2) * tileSize,
-                    -0.09, // Apoyo exacto para el lomo del gusano en Y=0
+                    -0.09,
                     (z - (CONFIG.GRID_HEIGHT - 1) / 2) * tileSize
                 );
                 tile.receiveShadow = true;
@@ -527,15 +516,39 @@ class World3D {
             }
         }
 
+        // Costura central de solapas en el fondo de la caja (como se aprecia en la imagen 2)
+        const seamMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CARDBOARD_SEAM,
+            roughness: 0.9
+        });
+        const seamGeo = new THREE.BoxGeometry(0.08, 0.015, totalH * 0.98);
+        const centerSeam = new THREE.Mesh(seamGeo, seamMat);
+        centerSeam.position.set(0, 0.005, 0);
+        centerSeam.receiveShadow = true;
+        floorGroup.add(centerSeam);
+
+        // Tira de cinta adhesiva de embalaje translúcida a lo largo de la costura
+        const tapeMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CARDBOARD_TAPE,
+            roughness: 0.2,
+            metalness: 0.05,
+            transparent: true,
+            opacity: 0.55
+        });
+        const tapeGeo = new THREE.BoxGeometry(0.85, 0.012, totalH * 0.96);
+        const tapeMesh = new THREE.Mesh(tapeGeo, tapeMat);
+        tapeMesh.position.set(0, 0.006, 0);
+        tapeMesh.receiveShadow = true;
+        floorGroup.add(tapeMesh);
+
         this.boxGroup.add(floorGroup);
     }
 
     /**
-     * Base de soporte y cinta de embalaje adhesiva
+     * Base de soporte inferior de la caja
      */
-    initCardboardBaseAndTape(totalW, totalH) {
-        // Base inferior sólida de la caja de cartón
-        const baseGeo = new THREE.BoxGeometry(totalW + 0.3, 0.28, totalH + 0.3);
+    initCardboardBase(totalW, totalH) {
+        const baseGeo = new THREE.BoxGeometry(totalW + 0.2, 0.26, totalH + 0.2);
         const baseMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_BASE,
             roughness: 0.92
@@ -544,66 +557,47 @@ class World3D {
         baseMesh.position.y = -0.22;
         baseMesh.receiveShadow = true;
         this.boxGroup.add(baseMesh);
-
-        // Tiras de Cinta de Embalaje (Packing Tape) transparentes/satinadas
-        const tapeMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_TAPE,
-            roughness: 0.22,
-            metalness: 0.1,
-            transparent: true,
-            opacity: 0.65
-        });
-
-        // Cinta central a lo largo (Eje Z)
-        const tapeZGeo = new THREE.BoxGeometry(1.1, 0.015, totalH);
-        const tapeZ = new THREE.Mesh(tapeZGeo, tapeMat);
-        tapeZ.position.set(0, 0.005, 0);
-        tapeZ.receiveShadow = true;
-        this.boxGroup.add(tapeZ);
-
-        // Cinta central transversal (Eje X)
-        const tapeXGeo = new THREE.BoxGeometry(totalW, 0.016, 0.9);
-        const tapeX = new THREE.Mesh(tapeXGeo, tapeMat);
-        tapeX.position.set(0, 0.006, 0);
-        tapeX.receiveShadow = true;
-        this.boxGroup.add(tapeX);
     }
 
     /**
-     * Paredes de cartón 3D delimitadoras con borde superior corrugado
+     * Paredes de cartón 3D (forman el perímetro de la caja)
      */
     initCardboardWalls(totalW, totalH) {
         const wallsGroup = new THREE.Group();
-        const wallThickness = 0.8;
-        const wallHeight = CONFIG.WALL_HEIGHT;
+        const wallThickness = 0.6; // Grosor estilizado de pared de cartón
+        const wallHeight = CONFIG.WALL_HEIGHT; // 1.2
 
         const wallMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_WALL,
-            roughness: 0.85,
-            metalness: 0.05
+            roughness: 0.86,
+            metalness: 0.02
         });
 
         const rimMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_RIM,
-            roughness: 0.75,
-            metalness: 0.1
+            roughness: 0.78,
+            metalness: 0.05
         });
 
-        const createWallSection = (width, length, x, z) => {
+        const halfW = totalW / 2;
+        const halfH = totalH / 2;
+        const halfThick = wallThickness / 2;
+
+        const createWall = (w, len, x, z) => {
             const section = new THREE.Group();
 
-            // Muro principal de cartón
-            const bodyGeo = new THREE.BoxGeometry(width, wallHeight, length);
+            // Muro de cartón
+            const bodyGeo = new THREE.BoxGeometry(w, wallHeight, len);
             const body = new THREE.Mesh(bodyGeo, wallMat);
             body.position.y = wallHeight / 2;
             body.castShadow = true;
             body.receiveShadow = true;
             section.add(body);
 
-            // Borde superior biselado corrugado (borde cortado de cartón)
-            const rimGeo = new THREE.BoxGeometry(width + 0.06, 0.15, length + 0.06);
+            // Borde superior biselado corrugado (corte del cartón)
+            const rimGeo = new THREE.BoxGeometry(w + 0.04, 0.14, len + 0.04);
             const rim = new THREE.Mesh(rimGeo, rimMat);
-            rim.position.y = wallHeight + 0.075;
+            rim.position.y = wallHeight + 0.07;
             rim.castShadow = true;
             section.add(rim);
 
@@ -611,133 +605,200 @@ class World3D {
             return section;
         };
 
-        const halfW = totalW / 2;
-        const halfH = totalH / 2;
-        const halfThick = wallThickness / 2;
-
         // Pared Norte (Arriba)
-        wallsGroup.add(createWallSection(totalW + wallThickness * 2, wallThickness, 0, -halfH - halfThick));
+        wallsGroup.add(createWall(totalW + wallThickness * 2, wallThickness, 0, -halfH - halfThick));
         // Pared Sur (Abajo)
-        wallsGroup.add(createWallSection(totalW + wallThickness * 2, wallThickness, 0, halfH + halfThick));
+        wallsGroup.add(createWall(totalW + wallThickness * 2, wallThickness, 0, halfH + halfThick));
         // Pared Oeste (Izquierda)
-        wallsGroup.add(createWallSection(wallThickness, totalH, -halfW - halfThick, 0));
+        wallsGroup.add(createWall(wallThickness, totalH, -halfW - halfThick, 0));
         // Pared Este (Derecha)
-        wallsGroup.add(createWallSection(wallThickness, totalH, halfW + halfThick, 0));
+        wallsGroup.add(createWall(wallThickness, totalH, halfW + halfThick, 0));
 
         this.boxGroup.add(wallsGroup);
     }
 
     /**
-     * 4 Solapas Abiertas de la Caja de Cartón (Cardboard Flaps)
-     * Salen del borde superior de las paredes y caen abiertas hacia el césped exterior
+     * ====================================================================
+     * SOLAPAS ABIERTAS (FLAPS) — EXACTAMENTE COMO LA IMAGEN DE REFERENCIA 2
+     * ====================================================================
+     * Las 4 solapas se abren 100% HACIA EL EXTERIOR (en cruz alrededor de la caja):
+     * - Solapa Norte se extiende hacia -Z (arriba/afuera)
+     * - Solapa Sur se extiende hacia +Z (abajo/afuera)
+     * - Solapa Oeste se extiende hacia -X (izquierda/afuera)
+     * - Solapa Este se extiende hacia +X (derecha/afuera)
+     * 
+     * Cada solapa yace prácticamente horizontal / con un pequeñísimo declive
+     * hacia el césped exterior. NINGUNA solapa entra ni un milímetro dentro
+     * de la arena ni obstruye al gusanito ni a las manzanas.
      */
     initCardboardFlaps(totalW, totalH) {
         const flapsGroup = new THREE.Group();
-        const flapThickness = 0.14;
-        const flapLength = 4.2; // Longitud de la solapa abierta
-        const wallHeight = CONFIG.WALL_HEIGHT;
-        const halfW = totalW / 2;
-        const halfH = totalH / 2;
-        const wallThickness = 0.8;
+        const flapThickness = 0.12;
+        const flapLength = 6.2; // Longitud proporcional a la imagen 2
+        const wallThickness = 0.6;
+        const halfW = totalW / 2;  // 13.5
+        const halfH = totalH / 2;  // 13.5
+        const wallHeight = CONFIG.WALL_HEIGHT; // 1.2
 
         const flapMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_FLAP,
-            roughness: 0.82,
-            metalness: 0.05
+            roughness: 0.85,
+            metalness: 0.02
         });
 
         const flapRimMat = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.CARDBOARD_RIM,
-            roughness: 0.75
+            roughness: 0.8
         });
 
-        // Función para ensamblar una solapa con borde cortado
-        const buildFlap = (w, len) => {
-            const flap = new THREE.Group();
-            const bodyGeo = new THREE.BoxGeometry(w, flapThickness, len);
-            const body = new THREE.Mesh(bodyGeo, flapMat);
-            body.position.z = len / 2;
-            body.castShadow = true;
-            body.receiveShadow = true;
-            flap.add(body);
+        const creaseMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CARDBOARD_SEAM,
+            roughness: 0.9
+        });
 
-            // Borde exterior cortado de la solapa
-            const edgeGeo = new THREE.BoxGeometry(w, flapThickness * 1.05, 0.12);
-            const edge = new THREE.Mesh(edgeGeo, flapRimMat);
-            edge.position.z = len;
-            edge.castShadow = true;
-            flap.add(edge);
+        // ---------------------------------------------------------------
+        // 1. SOLAPA NORTE (Top Flap en imagen 2)
+        // Se extiende hacia -Z (completamente fuera de la caja hacia arriba)
+        // ---------------------------------------------------------------
+        const flapNorth = new THREE.Group();
+        const bodyNorthGeo = new THREE.BoxGeometry(totalW, flapThickness, flapLength);
+        const bodyNorth = new THREE.Mesh(bodyNorthGeo, flapMat);
+        bodyNorth.position.z = -flapLength / 2;
+        bodyNorth.castShadow = true;
+        bodyNorth.receiveShadow = true;
+        flapNorth.add(bodyNorth);
 
-            return flap;
-        };
+        // Borde exterior cortado de la solapa
+        const rimNorthGeo = new THREE.BoxGeometry(totalW, flapThickness * 1.05, 0.12);
+        const rimNorth = new THREE.Mesh(rimNorthGeo, flapRimMat);
+        rimNorth.position.z = -flapLength;
+        rimNorth.castShadow = true;
+        flapNorth.add(rimNorth);
 
-        const flapAngle = 0.48; // Inclinación suave hacia abajo (~27 grados)
+        // Línea de hendidura/doblez junto a la bisagra
+        const creaseNorth = new THREE.Mesh(new THREE.BoxGeometry(totalW, 0.02, 0.08), creaseMat);
+        creaseNorth.position.set(0, flapThickness / 2 + 0.01, -0.15);
+        flapNorth.add(creaseNorth);
 
-        // Solapa Norte (Arriba)
-        const flapNorth = buildFlap(totalW, flapLength);
-        flapNorth.position.set(0, wallHeight + 0.05, -halfH - wallThickness);
-        flapNorth.rotation.x = flapAngle;
-        flapNorth.rotation.y = Math.PI; // Hacia afuera
+        // Posicionar en la bisagra exterior del muro Norte y aplicar leve caída hacia afuera (-X rot)
+        flapNorth.position.set(0, wallHeight + 0.04, -halfH - wallThickness);
+        flapNorth.rotation.x = 0.12; // Cae suavemente hacia el césped en -Z
         flapsGroup.add(flapNorth);
 
-        // Solapa Sur (Abajo)
-        const flapSouth = buildFlap(totalW, flapLength);
-        flapSouth.position.set(0, wallHeight + 0.05, halfH + wallThickness);
-        flapSouth.rotation.x = flapAngle;
+        // ---------------------------------------------------------------
+        // 2. SOLAPA SUR (Bottom Flap en imagen 2)
+        // Se extiende hacia +Z (completamente fuera de la caja hacia abajo)
+        // ---------------------------------------------------------------
+        const flapSouth = new THREE.Group();
+        const bodySouthGeo = new THREE.BoxGeometry(totalW, flapThickness, flapLength);
+        const bodySouth = new THREE.Mesh(bodySouthGeo, flapMat);
+        bodySouth.position.z = flapLength / 2;
+        bodySouth.castShadow = true;
+        bodySouth.receiveShadow = true;
+        flapSouth.add(bodySouth);
+
+        const rimSouth = new THREE.Mesh(rimNorthGeo, flapRimMat);
+        rimSouth.position.z = flapLength;
+        rimSouth.castShadow = true;
+        flapSouth.add(rimSouth);
+
+        const creaseSouth = new THREE.Mesh(new THREE.BoxGeometry(totalW, 0.02, 0.08), creaseMat);
+        creaseSouth.position.set(0, flapThickness / 2 + 0.01, 0.15);
+        flapSouth.add(creaseSouth);
+
+        flapSouth.position.set(0, wallHeight + 0.04, halfH + wallThickness);
+        flapSouth.rotation.x = -0.12; // Cae suavemente hacia el césped en +Z
         flapsGroup.add(flapSouth);
 
-        // Solapa Oeste (Izquierda)
-        const flapWest = buildFlap(totalH, flapLength);
-        flapWest.position.set(-halfW - wallThickness, wallHeight + 0.05, 0);
-        flapWest.rotation.y = Math.PI / 2;
-        flapWest.rotation.x = flapAngle;
+        // ---------------------------------------------------------------
+        // 3. SOLAPA OESTE (Left Flap en imagen 2)
+        // Se extiende hacia -X (completamente fuera de la caja hacia la izquierda)
+        // ---------------------------------------------------------------
+        const flapWest = new THREE.Group();
+        const bodyWestGeo = new THREE.BoxGeometry(flapLength, flapThickness, totalH);
+        const bodyWest = new THREE.Mesh(bodyWestGeo, flapMat);
+        bodyWest.position.x = -flapLength / 2;
+        bodyWest.castShadow = true;
+        bodyWest.receiveShadow = true;
+        flapWest.add(bodyWest);
+
+        const rimWestGeo = new THREE.BoxGeometry(0.12, flapThickness * 1.05, totalH);
+        const rimWest = new THREE.Mesh(rimWestGeo, flapRimMat);
+        rimWest.position.x = -flapLength;
+        rimWest.castShadow = true;
+        flapWest.add(rimWest);
+
+        const creaseWest = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.02, totalH), creaseMat);
+        creaseWest.position.set(-0.15, flapThickness / 2 + 0.01, 0);
+        flapWest.add(creaseWest);
+
+        flapWest.position.set(-halfW - wallThickness, wallHeight + 0.04, 0);
+        flapWest.rotation.z = 0.12; // Cae suavemente hacia la izquierda en -X
         flapsGroup.add(flapWest);
 
-        // Solapa Este (Derecha)
-        const flapEast = buildFlap(totalH, flapLength);
-        flapEast.position.set(halfW + wallThickness, wallHeight + 0.05, 0);
-        flapEast.rotation.y = -Math.PI / 2;
-        flapEast.rotation.x = flapAngle;
+        // ---------------------------------------------------------------
+        // 4. SOLAPA ESTE (Right Flap en imagen 2)
+        // Se extiende hacia +X (completamente fuera de la caja hacia la derecha)
+        // ---------------------------------------------------------------
+        const flapEast = new THREE.Group();
+        const bodyEastGeo = new THREE.BoxGeometry(flapLength, flapThickness, totalH);
+        const bodyEast = new THREE.Mesh(bodyEastGeo, flapMat);
+        bodyEast.position.x = flapLength / 2;
+        bodyEast.castShadow = true;
+        bodyEast.receiveShadow = true;
+        flapEast.add(bodyEast);
+
+        const rimEast = new THREE.Mesh(rimWestGeo, flapRimMat);
+        rimEast.position.x = flapLength;
+        rimEast.castShadow = true;
+        flapEast.add(rimEast);
+
+        const creaseEast = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.02, totalH), creaseMat);
+        creaseEast.position.set(0.15, flapThickness / 2 + 0.01, 0);
+        flapEast.add(creaseEast);
+
+        flapEast.position.set(halfW + wallThickness, wallHeight + 0.04, 0);
+        flapEast.rotation.z = -0.12; // Cae suavemente hacia la derecha en +X
         flapsGroup.add(flapEast);
 
         this.boxGroup.add(flapsGroup);
     }
 
     /**
-     * Sellos impresos sobre el cartón (Reciclaje, THIS SIDE UP) y Etiqueta de Envío
+     * Etiqueta de paquetería colocada sobre la solapa EXTERIOR Sur
+     * (fuera del área de juego)
      */
-    initCardboardDetails(totalW, totalH) {
-        // 1. Sello estampado de reciclaje ♻️ y flechas "THIS SIDE UP"
-        const stampTexture = this.generateStampTexture();
-        const stampGeo = new THREE.PlaneGeometry(3.6, 3.6);
-        const stampMat = new THREE.MeshBasicMaterial({
-            map: stampTexture,
-            transparent: true,
-            opacity: 0.8
-        });
-
-        // Sello en la esquina superior izquierda del fondo de la caja
-        const stampMesh = new THREE.Mesh(stampGeo, stampMat);
-        stampMesh.rotation.x = -Math.PI / 2;
-        stampMesh.position.set(-totalW / 2 + 2.8, 0.012, -totalH / 2 + 2.8);
-        this.boxGroup.add(stampMesh);
-
-        // 2. Etiqueta blanca de envío adhesiva pegada en la solapa Sur
+    initShippingLabel(totalW, totalH) {
         const labelTexture = this.generateShippingLabelTexture();
-        const labelGeo = new THREE.PlaneGeometry(3.4, 2.2);
+        const labelGeo = new THREE.PlaneGeometry(3.6, 2.2);
         const labelMat = new THREE.MeshBasicMaterial({
             map: labelTexture,
             transparent: false
         });
         const labelMesh = new THREE.Mesh(labelGeo, labelMat);
-        labelMesh.position.set(2.5, CONFIG.WALL_HEIGHT - 0.72, totalH / 2 + 2.45);
-        labelMesh.rotation.x = -0.48; // Misma inclinación que la solapa Sur
-        labelMesh.castShadow = true;
+        // Colocada de forma horizontal sobre la solapa Sur exterior
+        labelMesh.rotation.x = -Math.PI / 2 + 0.12;
+        labelMesh.position.set(3.5, CONFIG.WALL_HEIGHT + 0.04, totalH / 2 + 3.5);
+        labelMesh.receiveShadow = true;
         this.boxGroup.add(labelMesh);
+
+        // Sello estampado "THIS SIDE UP" y reciclaje sobre la solapa Norte exterior
+        const stampTexture = this.generateStampTexture();
+        const stampGeo = new THREE.PlaneGeometry(3.4, 3.4);
+        const stampMat = new THREE.MeshBasicMaterial({
+            map: stampTexture,
+            transparent: true,
+            opacity: 0.75
+        });
+        const stampMesh = new THREE.Mesh(stampGeo, stampMat);
+        stampMesh.rotation.x = -Math.PI / 2 - 0.12;
+        stampMesh.position.set(-3.5, CONFIG.WALL_HEIGHT + 0.04, -totalH / 2 - 3.5);
+        stampMesh.receiveShadow = true;
+        this.boxGroup.add(stampMesh);
     }
 
     /**
-     * Genera proceduralmente textura de sellos de tinta sobre cartón
+     * Genera proceduralmente sello de tinta sobre cartón
      */
     generateStampTexture() {
         const canvas = document.createElement('canvas');
@@ -746,22 +807,20 @@ class World3D {
         const ctx = canvas.getContext('2d');
 
         ctx.clearRect(0, 0, 256, 256);
-        ctx.strokeStyle = '#451a03';
-        ctx.fillStyle = '#451a03';
+        ctx.strokeStyle = '#3d200a';
+        ctx.fillStyle = '#3d200a';
         ctx.lineWidth = 6;
 
-        // Marco exterior punteado/desgastado
         ctx.strokeRect(18, 18, 220, 220);
 
         // Flechas "THIS SIDE UP" (↑ ↑)
         ctx.beginPath();
-        // Flecha izquierda
         ctx.moveTo(70, 110);
         ctx.lineTo(70, 50);
         ctx.lineTo(50, 70);
         ctx.moveTo(70, 50);
         ctx.lineTo(90, 70);
-        // Flecha derecha
+
         ctx.moveTo(186, 110);
         ctx.lineTo(186, 50);
         ctx.lineTo(166, 70);
@@ -769,10 +828,8 @@ class World3D {
         ctx.lineTo(206, 70);
         ctx.stroke();
 
-        // Barra inferior de flechas
         ctx.fillRect(45, 120, 166, 8);
 
-        // Texto estilizado
         ctx.font = 'bold 22px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('THIS SIDE UP', 128, 160);
@@ -785,7 +842,7 @@ class World3D {
     }
 
     /**
-     * Genera proceduralmente etiqueta de paquetería/envío con código de barras
+     * Genera proceduralmente etiqueta de paquetería con código de barras
      */
     generateShippingLabelTexture() {
         const canvas = document.createElement('canvas');
@@ -793,16 +850,13 @@ class World3D {
         canvas.height = 160;
         const ctx = canvas.getContext('2d');
 
-        // Fondo papel blanco marfil
         ctx.fillStyle = '#f8fafc';
         ctx.fillRect(0, 0, 256, 160);
 
-        // Borde fino
         ctx.strokeStyle = '#cbd5e1';
         ctx.lineWidth = 4;
         ctx.strokeRect(4, 4, 248, 152);
 
-        // Cabecera "EXPRESS DELIVERY"
         ctx.fillStyle = '#1e293b';
         ctx.font = 'bold 16px sans-serif';
         ctx.fillText('📦 SNAKE 3D EXPRESS', 16, 26);
@@ -811,7 +865,7 @@ class World3D {
         ctx.font = '10px monospace';
         ctx.fillText('PRIORITY AIR MAIL — FOREST REGION', 16, 42);
 
-        // Código de barras simulado
+        // Código de barras
         ctx.fillStyle = '#0f172a';
         let barX = 16;
         while (barX < 240) {
@@ -820,12 +874,10 @@ class World3D {
             barX += w + (Math.random() > 0.4 ? 3 : 2);
         }
 
-        // Número de seguimiento
         ctx.font = 'bold 12px monospace';
         ctx.fillStyle = '#1e293b';
         ctx.fillText('* SNK-3D-2026-FOREST *', 40, 125);
 
-        // Sellito rojo de inspección
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2;
         ctx.strokeRect(170, 132, 70, 20);
@@ -915,7 +967,7 @@ class World3D {
     }
 
     /**
-     * Efecto de chispas y ondas de teletransporte (Portal Warp estilo Nokia)
+     * Efecto de chispas de teletransporte (Portal Warp estilo Nokia)
      */
     burstTeleport(position) {
         const count = 22;
@@ -951,10 +1003,10 @@ class World3D {
     }
 
     /**
-     * Actualiza partículas y la suave brisa sobre la vegetación del bosque
+     * Actualiza física de partículas y el suave balanceo de brisa en el bosque
      */
     update(delta, time = 0) {
-        // 1. Suave balanceo del viento sobre las copas de los árboles y flores
+        // Brisa viva sobre las copas de árboles y flores
         if (this.windSwayables.length > 0) {
             for (let i = 0; i < this.windSwayables.length; i++) {
                 const item = this.windSwayables[i];
@@ -962,7 +1014,7 @@ class World3D {
             }
         }
 
-        // 2. Física de partículas
+        // Partículas
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
             p.life -= p.decay * delta;
@@ -976,7 +1028,6 @@ class World3D {
                 p.velocity.y += p.gravity * delta;
                 p.mesh.position.addScaledVector(p.velocity, delta);
 
-                // Evitar que las partículas caigan debajo del suelo interior de la caja
                 if (p.mesh.position.y < 0.1) {
                     p.mesh.position.y = 0.1;
                     p.velocity.y *= -0.4;

@@ -33,22 +33,23 @@ const CONFIG = {
         SKY: 0x7dd3fc,             // Azul cielo fresco y luminoso
         FOG: 0xbae6fd,             // Niebla atmosférica suave de bosque
         
-        // Caja de cartón (Tablero / Arena donde se mueve el gusanito)
-        CARDBOARD_LIGHT: 0xdcb285, // Cartón kraft claro cálido (baldosas A)
-        CARDBOARD_DARK: 0xcfa070,  // Cartón kraft cálido para patrón ajedrezado (baldosas B)
-        CARDBOARD_BASE: 0xb88655,  // Base inferior de la caja
-        CARDBOARD_WALL: 0xba895c,  // Paredes de cartón de la caja
-        CARDBOARD_RIM: 0x9c673d,   // Borde superior corrugado del cartón
-        CARDBOARD_FLAP: 0xc49366,  // Solapas exteriores de la caja
-        CARDBOARD_TAPE: 0xf3dfc8,  // Cinta adhesiva de embalaje (kraft clara / satinada)
-        CARDBOARD_STAMP: 0x451a03, // Tinta oscura para sellos en el cartón
+        // Caja de cartón (Tablero / Arena donde se mueve el gusanito - Estilo Imagen de referencia)
+        CARDBOARD_LIGHT: 0xc4935f, // Cartón kraft natural medio-claro (baldosas A)
+        CARDBOARD_DARK: 0xb78550,  // Cartón kraft cálido para patrón ajedrezado sutil (baldosas B)
+        CARDBOARD_BASE: 0x9f6d3a,  // Base inferior de la caja
+        CARDBOARD_WALL: 0xa87440,  // Paredes interiores y exteriores de cartón
+        CARDBOARD_RIM: 0x7a4d25,   // Borde superior corrugado del cartón
+        CARDBOARD_FLAP: 0xbf8b56,  // Solapas exteriores abiertas de la caja
+        CARDBOARD_SEAM: 0x6e431e,  // Líneas de pliegue y uniones del cartón
+        CARDBOARD_TAPE: 0xe8cfb0,  // Cinta adhesiva de embalaje (kraft clara / satinada)
+        CARDBOARD_STAMP: 0x3d200a, // Tinta oscura para sellos en el cartón
 
         // Compatibilidad con referencias anteriores
-        SAND_LIGHT: 0xdcb285,
-        SAND_DARK: 0xcfa070,
-        SAND_BORDER: 0xb88655,
-        WALL_BASE: 0xba895c,
-        WALL_TOP: 0x9c673d,
+        SAND_LIGHT: 0xc4935f,
+        SAND_DARK: 0xb78550,
+        SAND_BORDER: 0x9f6d3a,
+        WALL_BASE: 0xa87440,
+        WALL_TOP: 0x7a4d25,
 
         // Bosque exterior (Césped, vegetación, flores y árboles)
         GRASS_GROUND: 0x489d74,    // Césped verde vivo de bosque
