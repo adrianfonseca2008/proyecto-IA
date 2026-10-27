@@ -1,7 +1,7 @@
-# 🐍 Snake 3D Clásico — Tablero de Arena (Estilo Google Snake)
+# 🐍 Snake 3D — Caja de Cartón en el Bosque (Estilo Google Snake)
 
 > **Motor Gráfico:** WebGL 2.0 / Three.js  
-> **Estética:** Visuales 3D llamativos estilo Google Snake (Tablero plano de arena con baldosas ajedrezadas, gusano verde con ojos expresivos, manzanas rojas 3D y paredes perimetrales en relieve)  
+> **Estética:** Diorama 3D vibrante y cálido (Arena/tablero en el interior de una caja de cartón kraft con solapas y cinta de embalaje, rodeada de un bosque soleado con césped, flores silvestres, setas y árboles que se mecen con la brisa)  
 > **Controles:** Sistema clásico 2D de 4 direcciones (Arriba, Abajo, Izquierda, Derecha)  
 > **Audio:** Síntesis procedural con Web Audio API (100% offline)  
 
@@ -9,17 +9,17 @@
 
 ## 1. Visión y Enfoque del Juego
 
-Esta versión rediseñada combina la **jugabilidad clásica y adictiva del Snake tradicional** (movimiento en un plano 2D sin necesidad de ascender ni descender) con la **riqueza visual del modelado 3D contemporáneo**:
+Esta versión combina la **jugabilidad clásica y adictiva del Snake tradicional** (movimiento en un plano 2D sin necesidad de ascender ni descender) con la **riqueza visual de una maqueta 3D tipo diorama**:
 
-* **Mapa Plano de Arena:** Tablero estilo Google Snake con baldosas de arena alternadas en dos tonos cálidos (`#f3e8cb` y `#e5d4ab`) y pequeñas piedritas decorativas en las esquinas.
-* **Paredes 3D Reales:** Las fronteras del mapa son muros elevados 3D en tono terracota brillante (`#ea580c`), que proyectan sombras suaves sobre el suelo arenoso para una noción táctil de profundidad.
+* **Caja de Cartón Kraft (Arena de Juego):** El tablero donde se mueve el gusanito es el interior de una caja de cartón con baldosas ajedrezadas en dos tonos kraft (`#dcb285` y `#cfa070`), sellos de envío ("THIS SIDE UP", reciclaje ♻️), tiras de cinta de embalaje adhesiva y paredes de cartón corrugado con sus 4 solapas abiertas desplegadas hacia el césped exterior.
+* **Fondo de Bosque Vivo:** Un claro de bosque soleado que rodea la caja, con un manto de césped fresco, decenas de flores silvestres de colores (margaritas blancas, amapolas rojas, flores celestes, amarillas y violetas), pequeños grupos de setas rojas con motas blancas, arbustos redondeados y árboles (frondosos y coníferas) que tienen una suave animación de balanceo con el viento.
 * **Gusano Verde 3D:** Un simpático personaje verde vibrante (`#22c55e`) con cabeza redondeada, ojos saltones blancos con pupilas negras, lengüita rosada y segmentos corporales que se desplazan de forma continua y fluida a 60 FPS mediante interpolación (`Vector3.lerp`).
-* **Manzanas Rojitas en 3D:** Frutas tridimensionales de color rojo brillante (`#ef4444`) con tallo marrón y hojita verde, que flotan y rotan suavemente sobre las casillas de arena (+1 punto).
+* **Manzanas Rojitas en 3D:** Frutas tridimensionales de color rojo brillante (`#ef4444`) con tallo marrón y hojita verde, que flotan y rotan suavemente sobre las casillas de la caja (+1 punto).
 * **🔷 Manzana Azul (Power-Up de Inmunidad):** Ítem especial resplandeciente con luz puntual propia. Al ser consumido otorga:
   * **2.0 segundos de Inmunidad** exacta con un contador visual flotante en pantalla (`HUD`).
   * **Gusano Translúcido / Fantasmal:** El cuerpo verde se vuelve semitransparente con un suave resplandor cian parpadeante.
   * **Atravesar el Propio Cuerpo:** La serpiente puede cruzar libremente sobre sus propios segmentos sin morir.
-  * **Teletransporte Envolvente (Estilo Nokia):** Al impactar contra cualquier muro perimetral 3D, la serpiente se teletransporta instantáneamente al extremo opuesto de la arena, acompañada de efectos de partículas de portal y sonido de salto cuántico.
+  * **Teletransporte Envolvente (Estilo Nokia):** Al impactar contra cualquier muro de cartón 3D, la serpiente se teletransporta instantáneamente al extremo opuesto de la arena, acompañada de efectos de partículas de portal y sonido de salto cuántico.
 * **Cámara Tipo 2D/3D (Tabletop Perspective):** Ángulo cenital inclinado que ofrece una vista despejada de todo el tablero sin puntos ciegos, apreciando el relieve de todos los elementos 3D.
 
 ---

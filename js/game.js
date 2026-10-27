@@ -36,7 +36,7 @@ class GameEngine {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(CONFIG.COLORS.SKY);
-        this.scene.fog = new THREE.Fog(CONFIG.COLORS.SKY, 40, 95);
+        this.scene.fog = new THREE.Fog(CONFIG.COLORS.FOG, 50, 130);
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -266,7 +266,7 @@ class GameEngine {
         }
 
         const causeMsg = cause === 'WALL'
-            ? '¡Chocaste contra las paredes de la arena!'
+            ? '¡Chocaste contra las paredes de la caja de cartón!'
             : '¡El gusano se mordió su propia cola!';
 
         document.getElementById('go-cause').textContent = causeMsg;
@@ -327,7 +327,7 @@ class GameEngine {
         }
 
         this.food.update(time);
-        this.world.update(delta);
+        this.world.update(delta, time);
         this.cameraManager.update(this.snake, delta);
 
         this.renderer.render(this.scene, this.cameraManager.camera);

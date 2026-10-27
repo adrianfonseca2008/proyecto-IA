@@ -28,19 +28,45 @@ const CONFIG = {
     BLUE_LIFETIME_TICKS: 45,   // Ticks antes de que expire la manzana azul
     IMMUNITY_DURATION_SEC: 2.0,// Duración exacta de inmunidad: 2 segundos
 
-    // Paleta de Colores Vivos y Llamativos (Estilo Google Snake / Arena y Verde)
+    // Paleta de Colores Vivos y Llamativos (Estilo Google Snake / Caja de Cartón en el Bosque)
     COLORS: {
-        SKY: 0x93c5fd,             // Azul cielo veraniego
-        FOG: 0xa5f3fc,
+        SKY: 0x7dd3fc,             // Azul cielo fresco y luminoso
+        FOG: 0xbae6fd,             // Niebla atmosférica suave de bosque
         
-        // Tablero tipo arena con baldosas alternadas estilo ajedrez
-        SAND_LIGHT: 0xf3e8cb,      // Arena clara cálida
-        SAND_DARK: 0xe5d4ab,       // Arena dorada cálida
-        SAND_BORDER: 0xd4bc87,     // Borde de la arena
-        
-        // Paredes 3D delimitadoras (Terracota / arcilla brillante estilo juguete)
-        WALL_BASE: 0xc2410c,       // Terracota vivo
-        WALL_TOP: 0xea580c,        // Naranja terracota superior
+        // Caja de cartón (Tablero / Arena donde se mueve el gusanito)
+        CARDBOARD_LIGHT: 0xdcb285, // Cartón kraft claro cálido (baldosas A)
+        CARDBOARD_DARK: 0xcfa070,  // Cartón kraft cálido para patrón ajedrezado (baldosas B)
+        CARDBOARD_BASE: 0xb88655,  // Base inferior de la caja
+        CARDBOARD_WALL: 0xba895c,  // Paredes de cartón de la caja
+        CARDBOARD_RIM: 0x9c673d,   // Borde superior corrugado del cartón
+        CARDBOARD_FLAP: 0xc49366,  // Solapas exteriores de la caja
+        CARDBOARD_TAPE: 0xf3dfc8,  // Cinta adhesiva de embalaje (kraft clara / satinada)
+        CARDBOARD_STAMP: 0x451a03, // Tinta oscura para sellos en el cartón
+
+        // Compatibilidad con referencias anteriores
+        SAND_LIGHT: 0xdcb285,
+        SAND_DARK: 0xcfa070,
+        SAND_BORDER: 0xb88655,
+        WALL_BASE: 0xba895c,
+        WALL_TOP: 0x9c673d,
+
+        // Bosque exterior (Césped, vegetación, flores y árboles)
+        GRASS_GROUND: 0x489d74,    // Césped verde vivo de bosque
+        GRASS_DARK: 0x2d6a4f,      // Sombras de vegetación
+        GRASS_TUFT: 0x52b788,      // Mechones de hierba 3D
+        TREE_TRUNK: 0x78350f,      // Tronco de madera
+        TREE_LEAVES_A: 0x15803d,   // Copa de árbol verde bosque
+        TREE_LEAVES_B: 0x16a34a,   // Copa de árbol verde esmeralda
+        TREE_LEAVES_C: 0x10b981,   // Copa de árbol verde menta
+        BUSH_GREEN: 0x22c55e,      // Arbustos redondos
+        MUSHROOM_CAP: 0xef4444,    // Hongo rojo de bosque
+        MUSHROOM_STEM: 0xfef08a,   // Tallo de hongo crema
+        FLOWER_CENTER: 0xfacc15,   // Centro amarillo de flores
+        FLOWER_WHITE: 0xffffff,    // Margarita blanca
+        FLOWER_RED: 0xf43f5e,      // Flor amapola roja
+        FLOWER_BLUE: 0x38bdf8,     // Flor silvestre celeste
+        FLOWER_YELLOW: 0xfde047,   // Flor silvestre amarilla
+        FLOWER_PURPLE: 0xc084fc,   // Flor lavanda violeta
         
         // Serpiente 3D (Verde vivo Google Snake)
         SNAKE_HEAD: 0x22c55e,      // Verde brillante vivo
