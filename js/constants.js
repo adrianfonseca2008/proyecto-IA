@@ -1,137 +1,105 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - CONSTANTES Y CONFIGURACIÓN (ESTILO GOOGLE SNAKE)
+ * SNAKE 3D: CYBERNETIC PROTOCOL - CONSTANTES Y CONFIGURACIÓN
  * ====================================================================
- * Configura la cuadrícula plana, direcciones en 2D (4 cardinales),
- * paleta de colores vivos tipo arena y vegetación, y parámetros del juego.
+ * Arquitectura de videojuego 3D profesional: estética Cyberpunk / Sci-Fi
+ * con fondos oscuros, iluminación de neón (cian, esmeralda, magenta, oro),
+ * materiales PBR metálicos y configuración modular de juego.
  */
 
 const CONFIG = {
-    // Dimensiones del tablero plano (Tablero de X x Z celdas)
+    // Dimensiones del tablero cyber (X x Z celdas)
     GRID_WIDTH: 18,            // 18 columnas
     GRID_HEIGHT: 18,           // 18 filas
-    CELL_SIZE: 1.5,            // Tamaño físico de cada celda en unidades 3D
-    WALL_HEIGHT: 1.2,          // Altura 3D de las paredes del perímetro
+    CELL_SIZE: 1.5,            // Tamaño físico de cada celda en unidades Three.js
+    WALL_HEIGHT: 1.1,          // Altura de las barreras de plasma perimetrales
 
-    // Velocidades del juego (en milisegundos por paso)
-    INITIAL_TICK_MS: 160,      // Velocidad inicial agradable y fluida
-    MIN_TICK_MS: 75,           // Velocidad máxima permitida
-    SPEED_UP_STEP_MS: 3,       // Aceleración por cada manzana comida
+    // Dificultades y velocidades (en ms por tick)
+    DIFFICULTIES: {
+        NORMAL: { name: 'Normal', initialTick: 150, minTick: 70, step: 3 },
+        HYPER:  { name: 'Hyper',  initialTick: 120, minTick: 55, step: 3 },
+        INSANE: { name: 'Insane', initialTick: 90,  minTick: 45, step: 2 }
+    },
+    CURRENT_DIFFICULTY: 'NORMAL',
 
-    // Puntuación y Power-Ups
-    POINTS_PER_APPLE: 1,       // 1 manzana = 1 punto (estilo clásico Google)
-    POINTS_BONUS_APPLE: 3,     // Manzana dorada = 3 puntos
-    POINTS_BLUE_APPLE: 2,      // Manzana azul de poder = 2 puntos
-    BONUS_SPAWN_CHANCE: 0.18,  // 18% probabilidad de manzana dorada
-    BONUS_LIFETIME_TICKS: 35,  // Ticks antes de que expire la manzana dorada
-    BLUE_SPAWN_CHANCE: 0.25,   // 25% probabilidad de manzana azul (Power-Up)
-    BLUE_LIFETIME_TICKS: 45,   // Ticks antes de que expire la manzana azul
-    IMMUNITY_DURATION_SEC: 2.0,// Duración exacta de inmunidad: 2 segundos
+    INITIAL_TICK_MS: 150,      // Velocidad base
+    MIN_TICK_MS: 65,           // Velocidad máxima permitida
+    SPEED_UP_STEP_MS: 3,       // Aceleración por cada núcleo de energía recolectado
 
-    // Paleta de Colores Super Vivos y Llamativos (Estilo Google Snake / Nintendo / Bosque Vibrante)
+    // Puntuación y Orbes de Energía (Food)
+    POINTS_PER_APPLE: 1,       // Núcleo rojo normal
+    POINTS_BONUS_APPLE: 3,     // Núcleo cuántico dorado
+    POINTS_BLUE_APPLE: 2,      // Orbe de fase azul (Shield)
+    BONUS_SPAWN_CHANCE: 0.20,  // Probabilidad de núcleo cuántico
+    BONUS_LIFETIME_TICKS: 36,  // Duración del bonus antes de expirar
+    BLUE_SPAWN_CHANCE: 0.25,   // Probabilidad de orbe de fase
+    BLUE_LIFETIME_TICKS: 45,   // Ticks de duración en el mapa
+    IMMUNITY_DURATION_SEC: 2.0,// Duración del cambio de fase (Inmunidad + Nokia Wall Teleport)
+
+    // Paleta de Colores Cyberpunk / Sci-Fi Neón sobre Oscuro
     COLORS: {
-        SKY: 0x38bdf8,             // Azul celeste radiante y cristalino
-        FOG: 0x7dd3fc,             // Niebla atmosférica suave y luminosa
+        // Entorno y Espacio Profundo
+        SPACE_BG: 0x050811,         // Negro espacial profundo
+        SPACE_FOG: 0x070c18,        // Niebla atmosférica cósmica
+        STAR_COLOR: 0x67e8f9,       // Partículas de datos estelares
         
-        // Caja de cartón (Tablero / Arena donde se mueve el gusanito)
-        CARDBOARD_LIGHT: 0xdeb887, // Cartón kraft dorado cálido luminoso (baldosas A)
-        CARDBOARD_DARK: 0xc99859,  // Cartón kraft cálido para patrón ajedrezado nítido (baldosas B)
-        CARDBOARD_BASE: 0xad7339,  // Base inferior de la caja
-        CARDBOARD_WALL: 0xba7f43,  // Paredes interiores y exteriores de cartón
-        CARDBOARD_RIM: 0x874e1d,   // Borde superior corrugado del cartón
-        CARDBOARD_FLAP: 0xd49b5f,  // Solapas exteriores abiertas de la caja
-        CARDBOARD_SEAM: 0x753e16,  // Líneas de pliegue y uniones del cartón
-        CARDBOARD_TAPE: 0xffeed6,  // Cinta adhesiva de embalaje con brillo satinado
-        CARDBOARD_STAMP: 0x3d200a, // Tinta oscura para sellos en el cartón
-
-        // Compatibilidad con referencias anteriores
-        SAND_LIGHT: 0xdeb887,
-        SAND_DARK: 0xc99859,
-        SAND_BORDER: 0xad7339,
-        WALL_BASE: 0xba7f43,
-        WALL_TOP: 0x874e1d,
-
-        // Bosque exterior (Césped vibrante, flores vivas, árboles y vegetación)
-        GRASS_GROUND: 0x22c55e,    // Césped verde esmeralda super vivo y radiante
-        GRASS_DARK: 0x16a34a,      // Verde bosque profundo
-        GRASS_TUFT: 0x4ade80,      // Briznas de hierba verde lima brillante
-        GRASS_LIME: 0x86efac,      // Hierba verde claro radiante
+        // Plataforma Cybernetic Arena
+        PLATFORM_BASE: 0x0a1122,    // Metal oscuro de soporte
+        PLATFORM_BORDER: 0x0ea5e9,  // Borde biselado azul cyber
+        TILE_DARK: 0x0c1527,        // Baldosa obsidiana A
+        TILE_LIGHT: 0x111e38,       // Baldosa grafito B
+        GRID_LINE: 0x00f5ff,        // Líneas de cuadrícula neón cian
+        GRID_DOT: 0x38bdf8,         // Puntos de intersección
         
-        // Madera y Árboles
-        TREE_TRUNK: 0x78350f,      // Tronco de roble marrón cálido
-        TREE_BIRCH: 0xf8fafc,      // Tronco de abedul blanco puro
-        TREE_BIRCH_SPOT: 0x1e293b, // Motitas oscuras de abedul
-        TREE_LEAVES_A: 0x15803d,   // Verde bosque profundo
-        TREE_LEAVES_B: 0x22c55e,   // Verde manzana viva
-        TREE_LEAVES_C: 0x4ade80,   // Verde lima radiante
-        TREE_LEAVES_MINT: 0x10b981,// Verde menta / esmeralda
-        TREE_LEAVES_GOLD: 0xfbbf24,// Follaje dorado de sol
-        TREE_APPLE: 0xff1744,      // Manzanitas rojas colgando de los árboles
+        // Barreras de Plasma Perimetrales (Paredes 3D)
+        PYLON_DARK: 0x0f172a,       // Pilones de esquina metálicos
+        PYLON_CORE: 0x00f5ff,       // Cristal de energía del pilón
+        BARRIER_BASE: 0x0369a1,     // Riel inferior
+        BARRIER_BEAM: 0x00f5ff,     // Rayo de plasma cian resplandeciente
+        BARRIER_GLOW: 0x38bdf8,     // Resplandor de contención
         
-        // Elementos de la naturaleza
-        BUSH_GREEN: 0x16a34a,      // Arbustos redondos
-        BUSH_LIME: 0x22c55e,       // Arbusto verde vivo
-        BERRY_RED: 0xff1744,       // Bayas rojas brillantes en arbustos
-        BERRY_GOLD: 0xffd600,      // Bayas doradas
-        LOG_WOOD: 0x603813,        // Tronco caído de madera
-        MOSS_GREEN: 0x4ade80,      // Musgo verde en troncos y rocas
-        STONE_GRAY: 0x94a3b8,      // Piedras de río
-        CLOUD_WHITE: 0xffffff,     // Nubes esponjosas en el cielo
+        // Serpiente Mecha Cyber (Snake 3D)
+        SNAKE_HEAD_CHASSIS: 0x0f172a, // Chasis de fibra de carbono oscura
+        SNAKE_HEAD_ACCENT: 0x00ff88,  // Neón esmeralda / cian en la cabeza
+        SNAKE_VISOR: 0x00f5ff,        // Visor holográfico frontal
+        SNAKE_BODY_A: 0x00e676,       // Neón esmeralda brillante (anillo primario)
+        SNAKE_BODY_B: 0x00b4d8,       // Neón cian eléctrico (anillo secundario)
+        SNAKE_CORE_DARK: 0x0a0f1d,    // Núcleo interno de polímero oscuro
+        SNAKE_SPINE: 0x38bdf8,        // Columna vertebral con pulso de energía
+        SNAKE_IMMUNE_HOLO: 0x00f5ff,  // Holograma translúcido en inmunidad de fase
         
-        // Hongos y Setas Mágicas
-        MUSHROOM_CAP_RED: 0xff1744,// Hongo rojo vivo
-        MUSHROOM_CAP_BLUE: 0x0ea5e9,// Hongo azul mágico
-        MUSHROOM_CAP_PURPLE: 0xa855f7,// Hongo violeta
-        MUSHROOM_STEM: 0xfffbeb,   // Tallo blanco crema
+        // Coleccionables (Holographic Energy Cores)
+        CORE_RED_PRIMARY: 0xff0055,   // Núcleo carmesí neón
+        CORE_RED_EMISSIVE: 0xff2a6d,  // Resplandor rojo/magenta intenso
+        CORE_RED_RINGS: 0xff5376,     // Anillos giroscópicos cuánticos
         
-        // Flores silvestres hiper llamativas
-        FLOWER_CENTER: 0xffd600,   // Centro amarillo sol brillante
-        FLOWER_WHITE: 0xffffff,    // Margarita blanca pura
-        FLOWER_RED: 0xff0055,      // Amapola rojo carmesí vivo
-        FLOWER_BLUE: 0x00b4d8,     // Nomeolvides celeste neón
-        FLOWER_YELLOW: 0xffea00,   // Diente de león amarillo sol
-        FLOWER_PURPLE: 0xc084fc,   // Orquídea violeta brillante
-        FLOWER_ORANGE: 0xff7a00,   // Caléndula naranja vivo
-        FLOWER_PINK: 0xff3b94,     // Flor rosa fucsia vibrante
+        CORE_GOLD_PRIMARY: 0xffb703,  // Núcleo solar dorado
+        CORE_GOLD_EMISSIVE: 0xffd166, // Resplandor dorado estelar
         
-        // Serpiente 3D (Verde vivo Google Snake ultra llamativo)
-        SNAKE_HEAD: 0x10b981,      // Verde esmeralda vivo
-        SNAKE_HEAD_DARK: 0x059669,
-        SNAKE_BODY_A: 0x22c55e,    // Verde brillante
-        SNAKE_BODY_B: 0x16a34a,    // Verde vivo alternado
-        SNAKE_EYES_WHITE: 0xffffff,// Ojos saltones blancos
-        SNAKE_PUPIL: 0x0f172a,     // Pupila negra
-        SNAKE_TONGUE: 0xff0055,    // Lengüita rojo fresa viva
-        SNAKE_IMMUNE_GLOW: 0x00f5ff,// Resplandor cian eléctrico en inmunidad
+        CORE_BLUE_PRIMARY: 0x00b4d8,  // Orbe de fase cian
+        CORE_BLUE_EMISSIVE: 0x00f5ff, // Luz eléctrica de escudo
         
-        // Manzanas 3D súper apetitosas y brillantes
-        APPLE_RED: 0xff1744,       // Rojo rubí saturado y brillante
-        APPLE_STEM: 0x5c2c0e,      // Tronquito café chocolate
-        APPLE_LEAF: 0x00e676,      // Hoja verde esmeralda brillante
-        APPLE_GOLD: 0xffb703,      // Oro radiante reluciente
-        APPLE_BLUE: 0x00b4d8,      // Azul cian eléctrico vibrante
-        APPLE_BLUE_EMISSIVE: 0x00f5ff, // Brillo cian neón intenso
-        
-        // Partículas
-        PARTICLE_EAT: 0x22c55e,
-        PARTICLE_CRASH: 0xff1744,
-        PARTICLE_BLUE: 0x00f5ff,
-        PARTICLE_WARP: 0x38bdf8
+        // Sistema de Partículas y FX
+        PARTICLE_CYAN: 0x00f5ff,
+        PARTICLE_MAGENTA: 0xff007f,
+        PARTICLE_GOLD: 0xffb703,
+        PARTICLE_EMERALD: 0x00ff88,
+        PARTICLE_SHIELD: 0x38bdf8
     },
 
-    // Las 4 direcciones cardinales del Snake Clásico (en el plano X, Z)
+    // 4 Direcciones cardinales clásicas
     DIRECTIONS: {
-        UP:    { x:  0, z: -1, name: 'Arriba' },
-        DOWN:  { x:  0, z:  1, name: 'Abajo' },
-        LEFT:  { x: -1, z:  0, name: 'Izquierda' },
-        RIGHT: { x:  1, z:  0, name: 'Derecha' }
+        UP:    { x:  0, z: -1, name: 'NORTE' },
+        DOWN:  { x:  0, z:  1, name: 'SUR' },
+        LEFT:  { x: -1, z:  0, name: 'OESTE' },
+        RIGHT: { x:  1, z:  0, name: 'ESTE' }
     },
 
-    // Modos de cámara
+    // Modos de cámara cinemáticos
     CAMERA_MODES: {
-        ISOMETRIC_3D: 'ISOMETRIC_3D', // Vista cenital inclinada en 3D (Recomendada)
-        TOP_DOWN: 'TOP_DOWN',         // Vista superior clásica
-        CHASE_3D: 'CHASE_3D'          // Vista cercana en 3D
+        ISOMETRIC_3D: 'ISOMETRIC_3D', // Vista táctica 3D inclinada (Recomendada)
+        TOP_DOWN: 'TOP_DOWN',         // Vista táctica radar 2D/3D
+        CHASE_3D: 'CHASE_3D'          // Vista en tercera persona dinámica
     }
 };
 

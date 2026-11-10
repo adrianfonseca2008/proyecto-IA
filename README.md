@@ -1,71 +1,68 @@
-# 🐍 Snake 3D — Caja de Cartón en el Bosque (Estilo Google Snake)
+# ⚡ SNAKE 3D: Cybernetic Protocol
 
-> **Motor Gráfico:** WebGL 2.0 / Three.js  
-> **Estética:** Diorama 3D vibrante y cálido (Arena/tablero en el interior de una caja de cartón kraft con solapas y cinta de embalaje, rodeada de un bosque soleado con césped, flores silvestres, setas y árboles que se mecen con la brisa)  
-> **Controles:** Sistema clásico 2D de 4 direcciones (Arriba, Abajo, Izquierda, Derecha)  
-> **Audio:** Síntesis procedural con Web Audio API (100% offline)  
-
----
-
-## 1. Visión y Enfoque del Juego
-
-Esta versión combina la **jugabilidad clásica y adictiva del Snake tradicional** (movimiento en un plano 2D sin necesidad de ascender ni descender) con la **riqueza visual de una maqueta 3D tipo diorama**:
-
-* **Caja de Cartón Kraft (Arena de Juego):** El tablero donde se mueve el gusanito es el interior de una caja de cartón con baldosas ajedrezadas en dos tonos kraft (`#dcb285` y `#cfa070`), sellos de envío ("THIS SIDE UP", reciclaje ♻️), tiras de cinta de embalaje adhesiva y paredes de cartón corrugado con sus 4 solapas abiertas desplegadas hacia el césped exterior.
-* **Fondo de Bosque Vivo:** Un claro de bosque soleado que rodea la caja, con un manto de césped fresco, decenas de flores silvestres de colores (margaritas blancas, amapolas rojas, flores celestes, amarillas y violetas), pequeños grupos de setas rojas con motas blancas, arbustos redondeados y árboles (frondosos y coníferas) que tienen una suave animación de balanceo con el viento.
-* **Gusano Verde 3D:** Un simpático personaje verde vibrante (`#22c55e`) con cabeza redondeada, ojos saltones blancos con pupilas negras, lengüita rosada y segmentos corporales que se desplazan de forma continua y fluida a 60 FPS mediante interpolación (`Vector3.lerp`).
-* **Manzanas Rojitas en 3D:** Frutas tridimensionales de color rojo brillante (`#ef4444`) con tallo marrón y hojita verde, que flotan y rotan suavemente sobre las casillas de la caja (+1 punto).
-* **🔷 Manzana Azul (Power-Up de Inmunidad):** Ítem especial resplandeciente con luz puntual propia. Al ser consumido otorga:
-  * **2.0 segundos de Inmunidad** exacta con un contador visual flotante en pantalla (`HUD`).
-  * **Gusano Translúcido / Fantasmal:** El cuerpo verde se vuelve semitransparente con un suave resplandor cian parpadeante.
-  * **Atravesar el Propio Cuerpo:** La serpiente puede cruzar libremente sobre sus propios segmentos sin morir.
-  * **Teletransporte Envolvente (Estilo Nokia):** Al impactar contra cualquier muro de cartón 3D, la serpiente se teletransporta instantáneamente al extremo opuesto de la arena, acompañada de efectos de partículas de portal y sonido de salto cuántico.
-* **Cámara Tipo 2D/3D (Tabletop Perspective):** Ángulo cenital inclinado que ofrece una vista despejada de todo el tablero sin puntos ciegos, apreciando el relieve de todos los elementos 3D.
+> **Motor Gráfico:** WebGL 2.0 / Three.js r128  
+> **Estética:** Cyberpunk / Sci-Fi Futurista Comercial (Plataforma cyber reflectiva, cuadrícula de neón cian, barreras de plasma láser perimetrales, iluminación cinematográfica dual rim-light, partículas de datos estelares y mecha snake 3D con shaders PBR)  
+> **Audio:** Sintetizador procedural con Web Audio API (FM, sub-bass, arpegios cuánticos, barridos láser, 100% offline)  
+> **UI/UX:** Interfaz táctica con Glassmorphism, tipografía Orbitron & Rajdhani, menú principal con fondo 3D interactivo y modales de configuración y protocolo  
 
 ---
 
-## 2. Tipos de Manzanas y Mecánicas
+## 1. Visión y Arquitectura del Videojuego
 
-| Manzana | Visual 3D | Efecto al Comer |
+Esta versión transforma completamente el juego clásico en una **experiencia de videojuego 3D comercial**, combinando controles de alta precisión con tecnología gráfica contemporánea:
+
+* **Plataforma Cybernetic Arena:** Base flotante de fibra de carbono oscura biselada con baldosas obsidian/grafito PBR reflectivas, cuadrícula de neón cian luminiscente con nodos de intersección y emblema central de precisión.
+* **Barreras Perimetrales de Plasma Láser:** Pilones de confinamiento octogonales con núcleos cristalinos en las 4 esquinas y rieles de plasma con haces de láser cian palpitantes que delimitan la arena.
+* **Mecha Snake 3D:** Serpiente cibernética aerodinámica con chasis de carbono metálico, visor holográfico frontal que emite un foco de luz dinámico hacia la pista, aletas de neón esmeralda y cápsulas corporales con anillos de poder alternados.
+* **Modo Cambio de Fase Cuántica (Phase Shift):** Al recolectar el Orbe Azul, la serpiente se transforma en un holograma cuántico translúcido (`opacity: 0.38` con aura cian) durante 2.0 segundos, permitiendo atravesar su propio cuerpo y **teletransportarse por las barreras perimetrales estilo Nokia**.
+* **Menú Principal con Escenario 3D Vivo:** El menú principal cuenta con un fondo interactivo en tiempo real donde la serpiente realiza patrullas autónomas con órbita cinemática de cámara mientras el jugador navega por las opciones.
+
+---
+
+## 2. Coleccionables Holográficos (Energy Cores)
+
+| Núcleo 3D | Visual Holográfico | Efecto en el Sistema |
 |---|---|---|
-| **Manzana Roja** | Esfera roja brillante con tallo y hoja verde | +1 punto y la serpiente alarga su cuerpo. Aumenta sutilmente la velocidad del juego. |
-| **Manzana Azul (Power-Up)** | Esfera azul eléctrica pulsante con luz cian | +2 puntos y **2 segundos de inmunidad**: el gusano se vuelve transparente, atraviesa su propio cuerpo y se teletransporta a través de las paredes como en el Snake clásico de Nokia. |
-| **Manzana Dorada (Bonus)** | Esfera de oro metalizada con destellos dorados | +3 puntos y crecimiento rápido (Aparece temporalmente por tiempo limitado). |
+| **🔴 Núcleo Carmesí (Standard)** | Icosaedro facetado carmesí con anillos giroscópicos cuánticos | +1 punto. Extiende el chasis mecha e incrementa la velocidad progresiva de la cuadrícula. |
+| **🟡 Núcleo Solar (Quantum Bonus)** | Octaedro solar dorado con corona estelar | +3 puntos y crecimiento acelerado (+2 segmentos). Aparece temporalmente. |
+| **🔵 Orbe de Fase (Shield Overdrive)** | Esfera de confinamiento electromagnético cian | +2 puntos y **2.0 segundos de Escudo de Fase Cuántica**: la serpiente se vuelve translúcida, atraviesa su cuerpo y se teletransporta por las barreras estilo Nokia clásico. |
 
 ---
 
-## 3. Controles de Juego
+## 3. Controles del Sistema
 
-| Acción | Teclado Principal | Flechas del Teclado | Pad en Pantalla |
+| Acción | Teclas Primarias | Flechas del Teclado | Pad Táctil |
 |---|---|---|---|
-| **Arriba** | `W` | `Flecha Arriba` | Botón `▲` |
-| **Abajo** | `S` | `Flecha Abajo` | Botón `▼` |
-| **Izquierda** | `A` | `Flecha Izquierda` | Botón `◀` |
-| **Derecha** | `D` | `Flecha Derecha` | Botón `▶` |
-| **Alternar Cámara** | `C` | Botón HUD 🎥 | 3D Cenital / Plana / Seguimiento |
-| **Pausar / Reanudar** | `P` o `Escape` | Botón HUD ⏸️ | Pausa |
-| **Reiniciar Juego** | `Enter` o `Espacio` | Botón Modal | Reintentar |
+| **Vector Norte (Arriba)** | `W` | `Flecha Arriba` | Botón `▲` |
+| **Vector Sur (Abajo)** | `S` | `Flecha Abajo` | Botón `▼` |
+| **Vector Oeste (Izquierda)** | `A` | `Flecha Izquierda` | Botón `◀` |
+| **Vector Este (Derecha)** | `D` | `Flecha Derecha` | Botón `▶` |
+| **Modo de Cámara** | `C` | Botón HUD 🎥 | Isométrica 3D / Radar 2D / Seguimiento |
+| **Pausar Protocolo** | `P` o `Escape` | Botón HUD ⏸️ | Pausa |
+| **Alternar Audio** | `M` | Botón HUD 🔊 | Silenciar / Activar |
+| **Reinicio Rápido** | `R` | Botón HUD 🔄 | Reiniciar Misión |
+| **Despliegue / Continuar** | `Enter` o `Espacio` | Botones de Diálogo | Confirmar |
 
 ---
 
-## 4. Estructura de Archivos
+## 4. Estructura Modular del Proyecto
 
 ```text
 snake_3d/
-├── index.html            # Lienzo 3D, HUD superior, badge de inmunidad y modales
+├── index.html            # Lienzo WebGL, HUD Glassmorphism, Menú Principal y Modales
 ├── iniciar_juego.bat     # Lanzador para Windows (doble clic)
 ├── README.md             # Documentación técnica del proyecto
 ├── css/
-│   └── style.css         # Estilo visual limpio, badge de inmunidad pulsante y pad táctil
+│   └── style.css         # Estilos Cyberpunk, efectos neón, animaciones y diseño responsive
 └── js/
-    ├── constants.js      # Constantes de juego, tiempos de inmunidad, colores y física
-    ├── audio.js          # Efectos sonoros arcade (comer, choque, power-up eléctrico y teletransporte)
-    ├── input.js          # Captura 4 direcciones y filtro anti-giro de 180°
-    ├── world.js          # Tablero de arena ajedrezado, paredes 3D y partículas de teletransporte
-    ├── camera.js         # Vista 3D cenital de lectura instantánea sin ángulos ciegos
-    ├── food.js           # Manzanas 3D: Roja básica, Dorada bonus y Azul power-up con punto de luz
-    ├── snake.js          # Gusano verde con ojos, lengua, modo translúcido y salto envolvente
-    └── game.js           # Bucle principal, temporizador de inmunidad y gestión de estados
+    ├── constants.js      # Paleta neón/oscura, dificultades, dimensiones y parámetros
+    ├── audio.js          # Sintetizador procedural con Web Audio API (FM, sub-bass, arpegios)
+    ├── input.js          # Captura y buffer de comandos (teclado, touch dpad)
+    ├── world.js          # Plataforma cyber, barreras de plasma, motes estelares y partículas
+    ├── camera.js         # Controlador de cámara cinemática y órbita para el menú
+    ├── food.js           # Cores holográficos con giroscopios cuánticos y luces dinámicas
+    ├── snake.js          # Mecha snake 3D con visor láser, IA para demo de menú e interpolación
+    └── game.js           # Máquina de estados (MENU, PLAYING, PAUSED, GAME_OVER), HUD y progreso
 ```
 
 ---
@@ -73,5 +70,5 @@ snake_3d/
 ## 5. Instrucciones de Ejecución
 
 1. Entra en la carpeta `snake_3d`.
-2. Haz doble clic en `index.html` (o ejecuta `iniciar_juego.bat`).
-3. ¡Diviértete recolectando manzanas rojas, cazando la manzana azul para activar el modo Nokia y superando tu propio récord!
+2. Haz doble clic en `iniciar_juego.bat` o abre directamente `index.html` en cualquier navegador moderno.
+3. ¡Comienza tu misión en el protocolo cibernético de Snake 3D!

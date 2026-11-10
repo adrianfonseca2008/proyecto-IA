@@ -1,15 +1,17 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - GUSANO VERDE EN 3D (ESTILO GOOGLE SNAKE)
+ * SNAKE 3D: CYBERNETIC PROTOCOL - SERPIENTE MECHA CYBER 3D
  * ====================================================================
- * Modela un gusano verde 3D con ojos animados, lengua rosada,
- * segmentos redondeados con sombras y movimiento fluido sobre el plano
- * de arena mediante interpolación continua (Lerp).
- * 
- * Incorpora modo INMUNIDAD (Manzana Azul):
- * - El gusano se vuelve translúcido/transparente con resplandor cian.
- * - Atraviesa su propio cuerpo sin colisionar.
- * - Al chocar con los muros, se teletransporta al extremo opuesto (estilo Nokia).
+ * Modela una serpiente cibernética con chasis de fibra de carbono oscura,
+ * circuitos de neón esmeralda/cian integrados, visor láser frontal que
+ * proyecta luz dinámica en la cuadrícula, y segmentos articulados.
+ *
+ * Características avanzadas:
+ * 1. Cabeza mecha aerodinámica con visor holográfico y propulsores laterales.
+ * 2. Segmentos corporales con núcleos de polímero oscuro y anillos de neón.
+ * 3. Modo Cambio de Fase Cuántica (Inmunidad): Holograma translúcido cian.
+ * 4. Modo Demo Autónomo para el Menú Principal: Navegación libre para fondo 3D vivo.
+ * 5. Interpolación continua Lerp a 60 FPS con giro fluido y banking de giro.
  */
 
 class Snake3D {
@@ -22,98 +24,106 @@ class Snake3D {
         this.growPending = 0;
         this.direction = { ...CONFIG.DIRECTIONS.RIGHT };
         this.isImmune = false;
-
-        // Geometrías compartidas
-        const radius = CONFIG.CELL_SIZE * 0.44;
-        this.headGeometry = new THREE.SphereGeometry(radius, 20, 20);
-        this.bodyGeometry = new THREE.SphereGeometry(radius * 0.94, 16, 16);
-        this.eyeWhiteGeometry = new THREE.SphereGeometry(radius * 0.28, 12, 12);
-        this.pupilGeometry = new THREE.SphereGeometry(radius * 0.14, 10, 10);
-        this.tongueGeometry = new THREE.BoxGeometry(radius * 0.22, 0.08, radius * 0.5);
+        this.currentTilt = 0;
 
         this.initMaterials();
         this.reset();
     }
 
     initMaterials() {
-        // Verde brillante y llamativo para la cabeza
-        this.headMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.SNAKE_HEAD,
+        // Chasis de fibra de carbono oscura para la cabeza mecha
+        this.headChassisMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.SNAKE_HEAD_CHASSIS,
             roughness: 0.22,
-            metalness: 0.05,
-            emissive: 0x064e3b,
-            emissiveIntensity: 0.18
+            metalness: 0.88
         });
 
-        // Verdes alternados vibrantes para el cuerpo
-        this.bodyMaterialA = new THREE.MeshStandardMaterial({
+        // Visor láser holográfico frontal
+        this.visorMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.SNAKE_VISOR,
+            emissive: CONFIG.COLORS.SNAKE_VISOR,
+            emissiveIntensity: 1.4,
+            roughness: 0.1,
+            metalness: 0.2
+        });
+
+        // Acentos de neón en la cabeza
+        this.accentMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.SNAKE_HEAD_ACCENT,
+            emissive: CONFIG.COLORS.SNAKE_HEAD_ACCENT,
+            emissiveIntensity: 0.9,
+            roughness: 0.2
+        });
+
+        // Núcleo interno oscuro de los segmentos
+        this.bodyCoreMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.SNAKE_CORE_DARK,
+            roughness: 0.3,
+            metalness: 0.85
+        });
+
+        // Anillos de neón alternados (Esmeralda / Cian)
+        this.bodyRingMatA = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.SNAKE_BODY_A,
-            roughness: 0.25,
-            metalness: 0.05,
-            emissive: 0x065f46,
-            emissiveIntensity: 0.12
+            emissive: CONFIG.COLORS.SNAKE_BODY_A,
+            emissiveIntensity: 0.85,
+            roughness: 0.2,
+            metalness: 0.3
         });
 
-        this.bodyMaterialB = new THREE.MeshStandardMaterial({
+        this.bodyRingMatB = new THREE.MeshStandardMaterial({
             color: CONFIG.COLORS.SNAKE_BODY_B,
-            roughness: 0.25,
-            metalness: 0.05,
-            emissive: 0x064e3b,
-            emissiveIntensity: 0.12
+            emissive: CONFIG.COLORS.SNAKE_BODY_B,
+            emissiveIntensity: 0.85,
+            roughness: 0.2,
+            metalness: 0.3
         });
 
-        // Ojos saltones blancos
-        this.eyeWhiteMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.SNAKE_EYES_WHITE,
-            roughness: 0.1
-        });
-
-        // Pupilas negras
-        this.pupilMaterial = new THREE.MeshBasicMaterial({
-            color: CONFIG.COLORS.SNAKE_PUPIL
-        });
-
-        // Lengüita rosa
-        this.tongueMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.SNAKE_TONGUE,
-            roughness: 0.3
+        // Columna vertebral energética
+        this.spineMat = new THREE.MeshBasicMaterial({
+            color: CONFIG.COLORS.SNAKE_SPINE
         });
     }
 
     /**
-     * Aplica o remueve el estado visual de inmunidad (Transparencia y resplandor)
+     * Alterna el modo de Cambio de Fase Cuántica (Inmunidad)
      */
     setImmunity(immune) {
         if (this.isImmune === immune) return;
         this.isImmune = immune;
 
-        const allMaterials = [
-            this.headMaterial,
-            this.bodyMaterialA,
-            this.bodyMaterialB,
-            this.tongueMaterial
+        const allMats = [
+            this.headChassisMat,
+            this.bodyCoreMat,
+            this.bodyRingMatA,
+            this.bodyRingMatB,
+            this.accentMat
         ];
 
         if (this.isImmune) {
-            // Activar transparencia y brillo cian eléctrico
-            allMaterials.forEach(mat => {
+            allMats.forEach(mat => {
                 mat.transparent = true;
-                mat.opacity = 0.45;
-                mat.emissive.setHex(CONFIG.COLORS.SNAKE_IMMUNE_GLOW);
-                mat.emissiveIntensity = 0.55;
+                mat.opacity = 0.38;
+                mat.emissive.setHex(CONFIG.COLORS.SNAKE_IMMUNE_HOLO);
+                mat.emissiveIntensity = 0.95;
             });
-            this.eyeWhiteMaterial.transparent = true;
-            this.eyeWhiteMaterial.opacity = 0.6;
+            this.visorMat.opacity = 0.6;
         } else {
-            // Restaurar opacidad total normal
-            allMaterials.forEach(mat => {
+            allMats.forEach(mat => {
                 mat.transparent = false;
                 mat.opacity = 1.0;
-                mat.emissive.setHex(0x000000);
-                mat.emissiveIntensity = 0;
             });
-            this.eyeWhiteMaterial.transparent = false;
-            this.eyeWhiteMaterial.opacity = 1.0;
+            this.headChassisMat.emissive.setHex(0x000000);
+            this.headChassisMat.emissiveIntensity = 0;
+            this.bodyCoreMat.emissive.setHex(0x000000);
+            this.bodyCoreMat.emissiveIntensity = 0;
+            this.bodyRingMatA.emissive.setHex(CONFIG.COLORS.SNAKE_BODY_A);
+            this.bodyRingMatA.emissiveIntensity = 0.85;
+            this.bodyRingMatB.emissive.setHex(CONFIG.COLORS.SNAKE_BODY_B);
+            this.bodyRingMatB.emissiveIntensity = 0.85;
+            this.accentMat.emissive.setHex(CONFIG.COLORS.SNAKE_HEAD_ACCENT);
+            this.accentMat.emissiveIntensity = 0.9;
+            this.visorMat.opacity = 1.0;
         }
     }
 
@@ -122,7 +132,7 @@ class Snake3D {
         const offZ = (CONFIG.GRID_HEIGHT - 1) / 2;
         return new THREE.Vector3(
             (x - offX) * CONFIG.CELL_SIZE,
-            CONFIG.CELL_SIZE * 0.45,
+            CONFIG.CELL_SIZE * 0.44,
             (z - offZ) * CONFIG.CELL_SIZE
         );
     }
@@ -145,52 +155,83 @@ class Snake3D {
         this.addSegment(startX - 2, startZ, false);
     }
 
+    /**
+     * Construye un segmento 3D: cabeza mecha aerodinámica o cápsula corporal
+     */
     addSegment(x, z, isHead) {
         let mesh;
+        const radius = CONFIG.CELL_SIZE * 0.42;
 
         if (isHead) {
             mesh = new THREE.Group();
 
-            const headSphere = new THREE.Mesh(this.headGeometry, this.headMaterial);
-            headSphere.castShadow = true;
-            headSphere.receiveShadow = true;
-            mesh.add(headSphere);
+            // 1. Chasis principal de la cabeza (forma de cuña aerodinámica)
+            const chassisGeo = new THREE.SphereGeometry(radius, 16, 16);
+            chassisGeo.scale(1.05, 0.82, 1.25);
+            const chassis = new THREE.Mesh(chassisGeo, this.headChassisMat);
+            chassis.castShadow = true;
+            chassis.receiveShadow = true;
+            mesh.add(chassis);
 
-            // Ojo izquierdo
-            const eyeL = new THREE.Group();
-            const whiteL = new THREE.Mesh(this.eyeWhiteGeometry, this.eyeWhiteMaterial);
-            const pupilL = new THREE.Mesh(this.pupilGeometry, this.pupilMaterial);
-            pupilL.position.set(0, 0, this.eyeWhiteGeometry.parameters.radius * 0.8);
-            eyeL.add(whiteL);
-            eyeL.add(pupilL);
-            eyeL.position.set(-CONFIG.CELL_SIZE * 0.22, CONFIG.CELL_SIZE * 0.24, CONFIG.CELL_SIZE * 0.25);
-            mesh.add(eyeL);
+            // 2. Cresta superior reforzada
+            const crestGeo = new THREE.BoxGeometry(radius * 0.45, radius * 0.35, radius * 1.5);
+            const crest = new THREE.Mesh(crestGeo, this.headChassisMat);
+            crest.position.set(0, radius * 0.5, 0);
+            crest.castShadow = true;
+            mesh.add(crest);
 
-            // Ojo derecho
-            const eyeR = new THREE.Group();
-            const whiteR = new THREE.Mesh(this.eyeWhiteGeometry, this.eyeWhiteMaterial);
-            const pupilR = new THREE.Mesh(this.pupilGeometry, this.pupilMaterial);
-            pupilR.position.set(0, 0, this.eyeWhiteGeometry.parameters.radius * 0.8);
-            eyeR.add(whiteR);
-            eyeR.add(pupilR);
-            eyeR.position.set(CONFIG.CELL_SIZE * 0.22, CONFIG.CELL_SIZE * 0.24, CONFIG.CELL_SIZE * 0.25);
-            mesh.add(eyeR);
+            // 3. Visor láser holográfico envolvente
+            const visorGeo = new THREE.BoxGeometry(radius * 1.35, radius * 0.22, radius * 0.45);
+            const visor = new THREE.Mesh(visorGeo, this.visorMat);
+            visor.position.set(0, radius * 0.22, radius * 0.85);
+            mesh.add(visor);
 
-            // Lengüita
-            const tongue = new THREE.Mesh(this.tongueGeometry, this.tongueMaterial);
-            tongue.position.set(0, -CONFIG.CELL_SIZE * 0.08, CONFIG.CELL_SIZE * 0.44);
-            mesh.add(tongue);
+            // 4. Acentos de neón laterales (Aletas aerodinámicas)
+            const finGeo = new THREE.BoxGeometry(0.08, radius * 0.35, radius * 0.8);
+            const finL = new THREE.Mesh(finGeo, this.accentMat);
+            finL.position.set(-radius * 0.95, radius * 0.1, -radius * 0.1);
+            finL.rotation.z = -0.2;
+            mesh.add(finL);
+
+            const finR = new THREE.Mesh(finGeo, this.accentMat);
+            finR.position.set(radius * 0.95, radius * 0.1, -radius * 0.1);
+            finR.rotation.z = 0.2;
+            mesh.add(finR);
+
+            // 5. Luz frontal proyectada sobre la pista
+            const headLight = new THREE.SpotLight(CONFIG.COLORS.SNAKE_VISOR, 1.4, CONFIG.CELL_SIZE * 5, Math.PI / 4, 0.5);
+            headLight.position.set(0, radius * 0.3, radius * 0.7);
+            headLight.target.position.set(0, 0, radius * 4.0);
+            mesh.add(headLight);
+            mesh.add(headLight.target);
 
         } else {
+            mesh = new THREE.Group();
             const idx = this.segments.length;
-            const mat = idx % 2 === 0 ? this.bodyMaterialA : this.bodyMaterialB;
+            const ringMat = idx % 2 === 0 ? this.bodyRingMatA : this.bodyRingMatB;
 
-            mesh = new THREE.Mesh(this.bodyGeometry, mat);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
+            // Escala progresiva suave hacia la cola
+            const factor = Math.max(0.65, 1.0 - (idx / 40));
 
-            const factor = Math.max(0.68, 1.0 - (idx / 45));
-            mesh.scale.set(factor, factor * 0.95, factor);
+            // Núcleo de polímero oscuro
+            const coreGeo = new THREE.SphereGeometry(radius * 0.88, 14, 14);
+            const core = new THREE.Mesh(coreGeo, this.bodyCoreMat);
+            core.scale.set(factor, factor * 0.88, factor);
+            core.castShadow = true;
+            core.receiveShadow = true;
+            mesh.add(core);
+
+            // Anillo exterior de neón luminoso
+            const ringGeo = new THREE.TorusGeometry(radius * 0.84 * factor, 0.09 * factor, 8, 16);
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            mesh.add(ring);
+
+            // Nodo dorsal luminoso
+            const nodeGeo = new THREE.BoxGeometry(0.12 * factor, 0.12 * factor, 0.25 * factor);
+            const node = new THREE.Mesh(nodeGeo, this.spineMat);
+            node.position.y = radius * 0.8 * factor;
+            mesh.add(node);
         }
 
         const worldPos = this.gridToWorld(x, z);
@@ -220,9 +261,7 @@ class Snake3D {
     }
 
     /**
-     * Avanza el gusano 1 casilla en el tablero
-     * @param {Object} newDirection - Dirección actual
-     * @param {boolean} isImmune - Si está activo el power-up de inmunidad
+     * Avanza el gusano 1 casilla en el tablero cyber
      */
     step(newDirection, isImmune = false) {
         this.direction = newDirection;
@@ -238,7 +277,7 @@ class Snake3D {
         let nextZ = head.z + this.direction.z;
         let teleported = false;
 
-        // Comprobación de paredes
+        // Comprobación de barreras perimetrales
         const outOfBounds = (
             nextX < 0 || nextX >= CONFIG.GRID_WIDTH ||
             nextZ < 0 || nextZ >= CONFIG.GRID_HEIGHT
@@ -246,7 +285,7 @@ class Snake3D {
 
         if (outOfBounds) {
             if (isImmune) {
-                // TELETRANSPORTE AL OTRO EXTREMO (Estilo Nokia)
+                // TELETRANSPORTE CUÁNTICO (Estilo Nokia Wrap-around)
                 teleported = true;
                 if (nextX < 0) nextX = CONFIG.GRID_WIDTH - 1;
                 else if (nextX >= CONFIG.GRID_WIDTH) nextX = 0;
@@ -258,7 +297,7 @@ class Snake3D {
             }
         }
 
-        // Comprobación de auto-colisión (atravesarse a sí mismo en inmunidad)
+        // Comprobación de auto-colisión (atravesar cuerpo si es inmune)
         if (!isImmune) {
             const checkLength = this.growPending > 0 ? this.segments.length : this.segments.length - 1;
             for (let i = 1; i < checkLength; i++) {
@@ -292,15 +331,66 @@ class Snake3D {
     }
 
     /**
-     * Interpolación suave a 60 FPS con soporte para teletransporte envolvente
+     * IA Autónoma para el fondo animado del Menú Principal
+     */
+    getSafeDemoDirection(foodPos) {
+        const head = this.segments[0];
+        const currentDir = this.direction;
+        const candidates = [
+            CONFIG.DIRECTIONS.UP,
+            CONFIG.DIRECTIONS.RIGHT,
+            CONFIG.DIRECTIONS.DOWN,
+            CONFIG.DIRECTIONS.LEFT
+        ];
+
+        // Filtrar giros imposibles de 180 grados
+        const valid = candidates.filter(d => !(d.x === -currentDir.x && d.z === -currentDir.z));
+
+        // Ponderar movimientos que no choquen y se acerquen a la comida
+        const safeCandidates = [];
+        for (const dir of valid) {
+            const nx = head.x + dir.x;
+            const nz = head.z + dir.z;
+
+            // Evitar bordes
+            if (nx < 1 || nx >= CONFIG.GRID_WIDTH - 1 || nz < 1 || nz >= CONFIG.GRID_HEIGHT - 1) {
+                continue;
+            }
+
+            // Evitar el propio cuerpo
+            let hitSelf = false;
+            for (let i = 1; i < this.segments.length; i++) {
+                if (this.segments[i].x === nx && this.segments[i].z === nz) {
+                    hitSelf = true;
+                    break;
+                }
+            }
+            if (hitSelf) continue;
+
+            // Distancia a comida
+            const dist = foodPos ? Math.hypot(nx - foodPos.x, nz - foodPos.z) : 0;
+            safeCandidates.push({ dir, dist });
+        }
+
+        if (safeCandidates.length > 0) {
+            safeCandidates.sort((a, b) => a.dist - b.dist);
+            // 85% de las veces ir hacia la comida, 15% giro aleatorio seguro
+            return Math.random() < 0.85 ? safeCandidates[0].dir : safeCandidates[Math.floor(Math.random() * safeCandidates.length)].dir;
+        }
+
+        return currentDir;
+    }
+
+    /**
+     * Interpolación suave a 60 FPS con teletransporte y banking cinemático
      */
     updateInterpolation(alpha) {
-        // Si tiene inmunidad, hacer un suave efecto de parpadeo/pulsación translúcida
         if (this.isImmune) {
-            const pulseOpacity = 0.38 + Math.sin(Date.now() * 0.012) * 0.18;
-            this.headMaterial.opacity = pulseOpacity;
-            this.bodyMaterialA.opacity = pulseOpacity;
-            this.bodyMaterialB.opacity = pulseOpacity;
+            const pulse = 0.35 + Math.sin(Date.now() * 0.015) * 0.25;
+            this.headChassisMat.opacity = pulse;
+            this.bodyCoreMat.opacity = pulse;
+            this.bodyRingMatA.opacity = pulse;
+            this.bodyRingMatB.opacity = pulse;
         }
 
         for (let i = 0; i < this.segments.length; i++) {
@@ -309,8 +399,7 @@ class Snake3D {
             let pX = seg.prevX;
             let pZ = seg.prevZ;
 
-            // Manejo de continuidad visual en teletransporte:
-            // Proyecta la posición previa a las afueras de la pared contraria para que entre naturalmente
+            // Coordenadas virtuales para evitar estiramiento en teletransporte Nokia
             if (seg.x - seg.prevX > 1) {
                 pX = CONFIG.GRID_WIDTH;
             } else if (seg.prevX - seg.x > 1) {
@@ -329,7 +418,7 @@ class Snake3D {
             seg.mesh.position.x = THREE.MathUtils.lerp(pWorld.x, cWorld.x, alpha);
             seg.mesh.position.z = THREE.MathUtils.lerp(pWorld.z, cWorld.z, alpha);
 
-            // Orientación rotacional de la cabeza
+            // Orientación suave de la cabeza
             if (seg.isHead) {
                 let targetAngle = 0;
                 if (this.direction.x === 1) targetAngle = Math.PI / 2;

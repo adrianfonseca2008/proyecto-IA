@@ -1,13 +1,14 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - MANZANAS 3D Y POWER-UPS (FOOD MANAGER)
+ * SNAKE 3D: CYBERNETIC PROTOCOL - NÚCLEOS DE ENERGÍA 3D (FOOD MANAGER)
  * ====================================================================
- * Modela:
- * 1. Manzana Roja Normal: +1 punto, hace crecer al gusano.
- * 2. Manzana Dorada Bonus: +3 puntos, crecimiento rápido.
- * 3. Manzana Azul Power-Up: +2 puntos, otorga INMUNIDAD (2s),
- *    hace al gusano transparente, atraviesa el cuerpo y teletransporta
- *    al chocar con las paredes (estilo Nokia clásico).
+ * Modela los coleccionables holográficos con Three.js:
+ * 1. Núcleo de Plasma Rojo (Standard Core): +1 punto, alarga la serpiente.
+ *    Esfera de cristal facetada con anillos giroscópicos cuánticos giratorios.
+ * 2. Núcleo Cuántico Dorado (Solar Core): +3 puntos, bonus temporal de alto valor.
+ *    Octaedro solar pulsante con corona dorada.
+ * 3. Orbe de Cambio de Fase Azul (Phase Shield): +2 puntos e inmunidad de 2s.
+ *    Esfera de confinamiento electromagnético con anillos de electrones y teletransporte.
  */
 
 class FoodManager {
@@ -31,54 +32,53 @@ class FoodManager {
     }
 
     initMaterials() {
-        // Rojo manzana llamativo, súper jugoso y brillante
-        this.appleMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.APPLE_RED,
-            roughness: 0.18,
-            metalness: 0.05,
-            emissive: 0x440011,
-            emissiveIntensity: 0.25
-        });
-
-        // Tallo café chocolate
-        this.stemMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.APPLE_STEM,
-            roughness: 0.75
-        });
-
-        // Hojita verde viva
-        this.leafMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.APPLE_LEAF,
-            roughness: 0.25,
-            emissive: 0x004411,
-            emissiveIntensity: 0.2,
-            side: THREE.DoubleSide
-        });
-
-        // Manzana dorada radiante especial
-        this.bonusMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.APPLE_GOLD,
+        // 1. Núcleo de Plasma Rojo Carmesí
+        this.redCoreMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CORE_RED_PRIMARY,
+            emissive: CONFIG.COLORS.CORE_RED_EMISSIVE,
+            emissiveIntensity: 1.1,
             roughness: 0.15,
-            metalness: 0.7,
-            emissive: CONFIG.COLORS.APPLE_GOLD,
-            emissiveIntensity: 0.45
+            metalness: 0.3
         });
 
-        // Manzana azul eléctrica (Power-Up de Inmunidad)
-        this.blueMaterial = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.APPLE_BLUE,
-            roughness: 0.12,
-            metalness: 0.4,
-            emissive: CONFIG.COLORS.APPLE_BLUE_EMISSIVE,
-            emissiveIntensity: 0.75
+        this.redRingMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CORE_RED_RINGS,
+            emissive: CONFIG.COLORS.CORE_RED_PRIMARY,
+            emissiveIntensity: 1.3,
+            roughness: 0.1,
+            metalness: 0.5
         });
 
-        this.blueLeafMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00f5ff,
-            roughness: 0.18,
-            emissive: 0x0284c7,
-            emissiveIntensity: 0.45,
-            side: THREE.DoubleSide
+        // 2. Núcleo Cuántico Dorado
+        this.goldCoreMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CORE_GOLD_PRIMARY,
+            emissive: CONFIG.COLORS.CORE_GOLD_EMISSIVE,
+            emissiveIntensity: 1.3,
+            roughness: 0.1,
+            metalness: 0.8
+        });
+
+        this.goldRingMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: CONFIG.COLORS.CORE_GOLD_PRIMARY,
+            emissiveIntensity: 1.5,
+            roughness: 0.1
+        });
+
+        // 3. Orbe de Cambio de Fase Azul
+        this.blueCoreMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.CORE_BLUE_PRIMARY,
+            emissive: CONFIG.COLORS.CORE_BLUE_EMISSIVE,
+            emissiveIntensity: 1.4,
+            roughness: 0.1,
+            metalness: 0.4
+        });
+
+        this.blueRingMat = new THREE.MeshStandardMaterial({
+            color: 0x38bdf8,
+            emissive: 0x00f5ff,
+            emissiveIntensity: 1.6,
+            roughness: 0.1
         });
     }
 
@@ -87,62 +87,84 @@ class FoodManager {
         const offZ = (CONFIG.GRID_HEIGHT - 1) / 2;
         return new THREE.Vector3(
             (x - offX) * CONFIG.CELL_SIZE,
-            CONFIG.CELL_SIZE * 0.45,
+            CONFIG.CELL_SIZE * 0.44,
             (z - offZ) * CONFIG.CELL_SIZE
         );
     }
 
     /**
-     * Construye una malla 3D de manzana según su tipo ('normal', 'bonus', 'blue')
+     * Construye un coleccionable 3D holográfico según tipo ('normal', 'bonus', 'blue')
      */
-    createAppleMesh(type = 'normal') {
-        const appleGroup = new THREE.Group();
-        const r = CONFIG.CELL_SIZE * 0.38;
+    createCoreMesh(type = 'normal') {
+        const coreGroup = new THREE.Group();
+        const r = CONFIG.CELL_SIZE * 0.32;
 
-        // 1. Cuerpo redondeado de la manzana
-        const bodyGeo = new THREE.SphereGeometry(r, 18, 18);
-        let bodyMat = this.appleMaterial;
-        let leafMat = this.leafMaterial;
+        if (type === 'normal') {
+            // Núcleo Icosaedro facetado carmesí
+            const coreGeo = new THREE.IcosahedronGeometry(r, 1);
+            const core = new THREE.Mesh(coreGeo, this.redCoreMat);
+            core.castShadow = true;
+            coreGroup.add(core);
 
-        if (type === 'bonus') {
-            bodyMat = this.bonusMaterial;
+            // Anillo giroscópico cuántico exterior
+            const ring1Geo = new THREE.TorusGeometry(r * 1.35, 0.045, 8, 24);
+            const ring1 = new THREE.Mesh(ring1Geo, this.redRingMat);
+            coreGroup.add(ring1);
+
+            // Anillo giroscópico cuántico interior
+            const ring2Geo = new THREE.TorusGeometry(r * 1.1, 0.035, 8, 20);
+            const ring2 = new THREE.Mesh(ring2Geo, this.redRingMat);
+            ring2.rotation.x = Math.PI / 2;
+            coreGroup.add(ring2);
+
+            // Luz dinámica proyectada sobre las baldosas
+            const redLight = new THREE.PointLight(CONFIG.COLORS.CORE_RED_PRIMARY, 1.2, CONFIG.CELL_SIZE * 3.5);
+            redLight.position.set(0, 0, 0);
+            coreGroup.add(redLight);
+
+            coreGroup.userData = { ring1, ring2, core, type: 'normal' };
+
+        } else if (type === 'bonus') {
+            // Octaedro solar brillante
+            const coreGeo = new THREE.OctahedronGeometry(r * 1.15, 0);
+            const core = new THREE.Mesh(coreGeo, this.goldCoreMat);
+            core.castShadow = true;
+            coreGroup.add(core);
+
+            // Anillo orbital dorado
+            const ringGeo = new THREE.TorusGeometry(r * 1.45, 0.05, 8, 24);
+            const ring = new THREE.Mesh(ringGeo, this.goldRingMat);
+            coreGroup.add(ring);
+
+            const goldLight = new THREE.PointLight(CONFIG.COLORS.CORE_GOLD_PRIMARY, 1.8, CONFIG.CELL_SIZE * 4.5);
+            coreGroup.add(goldLight);
+
+            coreGroup.userData = { ring, core, type: 'bonus' };
+
         } else if (type === 'blue') {
-            bodyMat = this.blueMaterial;
-            leafMat = this.blueLeafMaterial;
+            // Esfera de energía de fase cian
+            const coreGeo = new THREE.SphereGeometry(r * 0.95, 16, 16);
+            const core = new THREE.Mesh(coreGeo, this.blueCoreMat);
+            core.castShadow = true;
+            coreGroup.add(core);
+
+            // Dos anillos cruzados a 45 grados
+            const ringGeo = new THREE.TorusGeometry(r * 1.38, 0.05, 8, 24);
+            const ring1 = new THREE.Mesh(ringGeo, this.blueRingMat);
+            ring1.rotation.x = Math.PI / 4;
+            coreGroup.add(ring1);
+
+            const ring2 = new THREE.Mesh(ringGeo, this.blueRingMat);
+            ring2.rotation.y = Math.PI / 4;
+            coreGroup.add(ring2);
+
+            const blueLight = new THREE.PointLight(CONFIG.COLORS.CORE_BLUE_EMISSIVE, 2.0, CONFIG.CELL_SIZE * 5.0);
+            coreGroup.add(blueLight);
+
+            coreGroup.userData = { ring1, ring2, core, type: 'blue' };
         }
 
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.scale.set(1.0, 0.94, 1.0);
-        body.castShadow = true;
-        body.receiveShadow = true;
-        appleGroup.add(body);
-
-        // 2. Tallo marrón curvado
-        const stemGeo = new THREE.CylinderGeometry(0.04, 0.05, r * 0.55, 8);
-        const stem = new THREE.Mesh(stemGeo, this.stemMaterial);
-        stem.position.set(0, r * 0.95, 0);
-        stem.rotation.z = -0.15;
-        stem.castShadow = true;
-        appleGroup.add(stem);
-
-        // 3. Hojita inclinada
-        const leafGeo = new THREE.SphereGeometry(r * 0.28, 8, 8);
-        const leaf = new THREE.Mesh(leafGeo, leafMat);
-        leaf.scale.set(1.4, 0.25, 0.65);
-        leaf.position.set(r * 0.22, r * 1.05, 0);
-        leaf.rotation.z = 0.35;
-        leaf.rotation.y = 0.2;
-        leaf.castShadow = true;
-        appleGroup.add(leaf);
-
-        // 4. Luz focal propia para la manzana azul de poder
-        if (type === 'blue') {
-            const blueLight = new THREE.PointLight(CONFIG.COLORS.APPLE_BLUE_EMISSIVE, 1.6, CONFIG.CELL_SIZE * 4);
-            blueLight.position.set(0, r * 0.5, 0);
-            appleGroup.add(blueLight);
-        }
-
-        return appleGroup;
+        return coreGroup;
     }
 
     getFreeRandomCell(occupiedCells) {
@@ -179,7 +201,7 @@ class FoodManager {
         const worldPos = this.gridToWorld(newPos.x, newPos.z);
 
         if (!this.normalApple) {
-            this.normalApple = this.createAppleMesh('normal');
+            this.normalApple = this.createCoreMesh('normal');
             this.group.add(this.normalApple);
         }
 
@@ -200,16 +222,13 @@ class FoodManager {
             this.bonusGridPos = newPos;
             this.bonusRemainingTicks = CONFIG.BONUS_LIFETIME_TICKS;
 
-            this.bonusApple = this.createAppleMesh('bonus');
+            this.bonusApple = this.createCoreMesh('bonus');
             const worldPos = this.gridToWorld(newPos.x, newPos.z);
             this.bonusApple.position.copy(worldPos);
             this.group.add(this.bonusApple);
         }
     }
 
-    /**
-     * Genera aleatoriamente la Manzana Azul de Inmunidad
-     */
     maybeSpawnBlueApple(occupiedCells) {
         if (this.blueApple) return;
 
@@ -223,7 +242,7 @@ class FoodManager {
             this.blueGridPos = newPos;
             this.blueRemainingTicks = CONFIG.BLUE_LIFETIME_TICKS;
 
-            this.blueApple = this.createAppleMesh('blue');
+            this.blueApple = this.createCoreMesh('blue');
             const worldPos = this.gridToWorld(newPos.x, newPos.z);
             this.blueApple.position.copy(worldPos);
             this.group.add(this.blueApple);
@@ -262,29 +281,65 @@ class FoodManager {
         }
     }
 
+    /**
+     * Animación continua de levitación y rotación cuántica a 60 FPS
+     */
     update(time) {
         if (this.normalApple) {
-            this.normalApple.rotation.y = time * 2.0;
             const basePos = this.gridToWorld(this.normalGridPos.x, this.normalGridPos.z);
-            this.normalApple.position.y = basePos.y + Math.sin(time * 4) * 0.12;
+            this.normalApple.position.y = basePos.y + Math.sin(time * 3.5) * 0.14;
+
+            const u = this.normalApple.userData;
+            if (u.core) {
+                u.core.rotation.y = time * 2.0;
+                u.core.rotation.x = time * 1.2;
+            }
+            if (u.ring1) {
+                u.ring1.rotation.y = time * 3.0;
+                u.ring1.rotation.x = time * 1.5;
+            }
+            if (u.ring2) {
+                u.ring2.rotation.z = -time * 2.5;
+                u.ring2.rotation.x = time * 2.0;
+            }
         }
 
         if (this.bonusApple) {
-            this.bonusApple.rotation.y = time * 3.5;
             const basePos = this.gridToWorld(this.bonusGridPos.x, this.bonusGridPos.z);
-            this.bonusApple.position.y = basePos.y + Math.cos(time * 5) * 0.16;
+            this.bonusApple.position.y = basePos.y + Math.cos(time * 4.5) * 0.18;
 
-            const scale = 1.0 + Math.sin(time * 7) * 0.12;
-            this.bonusApple.scale.set(scale, scale, scale);
+            const u = this.bonusApple.userData;
+            if (u.core) {
+                u.core.rotation.y = time * 4.0;
+                u.core.rotation.z = time * 2.5;
+            }
+            if (u.ring) {
+                u.ring.rotation.x = time * 3.5;
+                u.ring.rotation.y = time * 2.8;
+            }
+
+            const pulse = 1.0 + Math.sin(time * 8.0) * 0.15;
+            this.bonusApple.scale.set(pulse, pulse, pulse);
         }
 
         if (this.blueApple) {
-            this.blueApple.rotation.y = time * 4.0;
             const basePos = this.gridToWorld(this.blueGridPos.x, this.blueGridPos.z);
-            this.blueApple.position.y = basePos.y + Math.sin(time * 6) * 0.18;
+            this.blueApple.position.y = basePos.y + Math.sin(time * 5.0) * 0.18;
 
-            // Pulsación y destello brillante
-            const pulse = 1.05 + Math.sin(time * 9) * 0.18;
+            const u = this.blueApple.userData;
+            if (u.core) {
+                u.core.rotation.y = time * 3.0;
+            }
+            if (u.ring1) {
+                u.ring1.rotation.y = time * 4.5;
+                u.ring1.rotation.z = time * 2.0;
+            }
+            if (u.ring2) {
+                u.ring2.rotation.x = -time * 4.5;
+                u.ring2.rotation.y = time * 3.0;
+            }
+
+            const pulse = 1.05 + Math.sin(time * 10.0) * 0.18;
             this.blueApple.scale.set(pulse, pulse, pulse);
         }
     }

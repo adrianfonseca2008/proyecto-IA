@@ -1,55 +1,53 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - ENTORNO 3D: CAJA DE CARTÓN EN UN BOSQUE VIBRANTE
+ * SNAKE 3D: CYBERNETIC PROTOCOL - ENTORNO 3D & ESCENARIO CYBER
  * ====================================================================
- * Combina la caja de cartón kraft abierta (según imagen de referencia,
- * con 4 solapas 100% exteriores que dejan la arena totalmente despejada)
- * con un BOSQUE SUPER POBLADO Y COLORIDO:
- * 
- * Naturaleza abundante:
- * - Más de 60 árboles en 3 capas de profundidad: robles frondosos,
- *   árboles con manzanitas rojas, abedules nórdicos blancos, pinos y árboles dorados.
- * - Nubes esponjosas 3D flotando suavemente en el cielo azul celeste radiante.
- * - Alfombra de más de 160 flores silvestres en 7 colores vivos hiper llamativos.
- * - Troncos caídos de madera con musgo verde brillante y setitas.
- * - Rocas de río decorativas con parches de musgo.
- * - Más de 20 arbustos redondos con bayas rojas y doradas.
- * - Setas rojas con motas blancas, setas azules mágicas y violetas.
- * - Suave brisa viva en tiempo real que mece árboles, flores y nubes.
+ * Modela un escenario de videojuego comercial 3D:
+ * 1. Plataforma Cyber Arena con suelo de alta precisión, cuadrícula de neón
+ *    y nodos de intersección luminiscentes.
+ * 2. Barreras perimetrales de plasma láser con pilones de energía en las 4 esquinas.
+ * 3. Iluminación cinematográfica dual de borde (rim lighting) cian y magenta.
+ * 4. Atmósfera espacial profunda con partículas de datos flotantes (Data Motes)
+ *    y monolitos digitales distantes.
+ * 5. Sistema de partículas para recolección, sobrecarga/choque y salto cuántico.
  */
 
 class World3D {
     constructor(scene) {
         this.scene = scene;
         this.particles = [];
-        this.windSwayables = []; // Follaje y flores mecidos por la brisa
-        this.clouds = [];        // Nubes esponjosas en movimiento
+        this.floatingMotes = [];
+        this.plasmaBeams = [];
 
         this.initLighting();
-        this.initForestEnvironment();
-        this.initCardboardBox();
+        this.initAtmosphere();
+        this.initCyberPlatform();
+        this.initPlasmaBoundaries();
         this.initParticleSystem();
     }
 
+    /**
+     * Iluminación cinematográfica futurista con sombras suaves y luces de borde neón
+     */
     initLighting() {
-        // Luz hemisférica luminosa y alegre: cielo celeste arriba, césped verde vivo abajo
-        const hemiLight = new THREE.HemisphereLight(
-            CONFIG.COLORS.SKY,
-            CONFIG.COLORS.GRASS_GROUND,
-            0.65
-        );
+        // 1. Luz ambiental profunda cósmica
+        const ambient = new THREE.AmbientLight(0x0a1128, 0.7);
+        this.scene.add(ambient);
+
+        // 2. Luz hemisférica: cielo azul oscuro, reflejo cian en el suelo
+        const hemiLight = new THREE.HemisphereLight(0x0f172a, 0x00f5ff, 0.4);
         this.scene.add(hemiLight);
 
-        // Luz solar cálida dorada (1.15) que da contraste, sombras suaves y colores radiantes
-        this.sunLight = new THREE.DirectionalLight(0xfff8e7, 1.15);
-        this.sunLight.position.set(22, 38, 20);
+        // 3. Luz principal direccional cenital que arroja sombras suaves
+        this.sunLight = new THREE.DirectionalLight(0xe0f2fe, 1.25);
+        this.sunLight.position.set(18, 35, 18);
         this.sunLight.castShadow = true;
         this.sunLight.shadow.mapSize.width = 2048;
         this.sunLight.shadow.mapSize.height = 2048;
         this.sunLight.shadow.camera.near = 1;
-        this.sunLight.shadow.camera.far = 140;
+        this.sunLight.shadow.camera.far = 100;
 
-        const bound = (CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE) / 2 + 14;
+        const bound = (CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE) / 2 + 5;
         this.sunLight.shadow.camera.left = -bound;
         this.sunLight.shadow.camera.right = bound;
         this.sunLight.shadow.camera.top = bound;
@@ -58,1106 +56,408 @@ class World3D {
 
         this.scene.add(this.sunLight);
 
-        // Luz de relleno lateral celeste para sombras luminosas y coloridas
-        const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.35);
-        fillLight.position.set(-24, 20, -24);
-        this.scene.add(fillLight);
+        // 4. Luz de borde izquierda: NEÓN CIAN
+        this.rimLightCyan = new THREE.DirectionalLight(0x00f5ff, 0.85);
+        this.rimLightCyan.position.set(-25, 15, -20);
+        this.scene.add(this.rimLightCyan);
+
+        // 5. Luz de borde derecha: NEÓN MAGENTA
+        this.rimLightMagenta = new THREE.DirectionalLight(0xff007f, 0.65);
+        this.rimLightMagenta.position.set(25, 15, 20);
+        this.scene.add(this.rimLightMagenta);
     }
 
     /**
-     * ====================================================================
-     * 1. EL BOSQUE REBOSANTE DE NATURALEZA Y COLOR
-     * ====================================================================
+     * Atmósfera de espacio profundo con partículas de datos y monolitos distantes
      */
-    initForestEnvironment() {
-        this.forestGroup = new THREE.Group();
+    initAtmosphere() {
+        this.atmosphereGroup = new THREE.Group();
 
-        // 1.1 Manto de Césped Exterior Verde Esmeralda Radiante
-        const grassGeo = new THREE.BoxGeometry(200, 1.2, 200);
-        const grassMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.GRASS_GROUND,
-            roughness: 0.88,
-            metalness: 0.03
+        // 1. Nube de partículas de datos (Data Motes) que flotan en el vacío
+        const motesCount = 180;
+        const moteGeo = new THREE.SphereGeometry(0.08, 6, 6);
+        const moteMatCyan = new THREE.MeshBasicMaterial({
+            color: CONFIG.COLORS.STAR_COLOR,
+            transparent: true,
+            opacity: 0.75
         });
-        const grassMesh = new THREE.Mesh(grassGeo, grassMat);
-        grassMesh.position.y = -0.72;
-        grassMesh.receiveShadow = true;
-        this.forestGroup.add(grassMesh);
-
-        // 1.2 Nubes esponjosas 3D en el cielo
-        this.initClouds();
-
-        // 1.3 Mechoncitos de Hierba 3D (Grass Tufts)
-        this.initGrassTufts();
-
-        // 1.4 Densa pradera de Flores Silvestres Coloridas (160+ flores)
-        this.initWildflowers();
-
-        // 1.5 Troncos caídos de madera y rocas con musgo
-        this.initLogsAndRocks();
-
-        // 1.6 Setas y Hongos Mágicos Variados (rojos, azules, violetas)
-        this.initMushrooms();
-
-        // 1.7 Bosque Denso de Árboles (60+ árboles en 3 capas de profundidad)
-        this.initDenseForest();
-
-        this.scene.add(this.forestGroup);
-    }
-
-    /**
-     * Nubes esponjosas 3D que flotan suavemente en el cielo
-     */
-    initClouds() {
-        const cloudGroup = new THREE.Group();
-        const cloudMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CLOUD_WHITE,
-            roughness: 0.25,
-            emissive: 0xffffff,
-            emissiveIntensity: 0.15
+        const moteMatMagenta = new THREE.MeshBasicMaterial({
+            color: 0xff2a85,
+            transparent: true,
+            opacity: 0.65
         });
 
-        // 6 nubes compuestas en el cielo
-        const cloudData = [
-            { x: -38, y: 32, z: -55, s: 1.4, speed: 0.8 },
-            { x: 15,  y: 35, z: -65, s: 1.8, speed: 0.6 },
-            { x: 48,  y: 30, z: -45, s: 1.2, speed: 0.9 },
-            { x: -55, y: 34, z: -25, s: 1.5, speed: 0.7 },
-            { x: 60,  y: 33, z: 15,  s: 1.3, speed: 0.75 },
-            { x: -20, y: 36, z: -75, s: 2.1, speed: 0.5 }
-        ];
+        for (let i = 0; i < motesCount; i++) {
+            const isCyan = Math.random() > 0.3;
+            const mote = new THREE.Mesh(moteGeo, isCyan ? moteMatCyan : moteMatMagenta);
 
-        cloudData.forEach(cd => {
-            const cloud = new THREE.Group();
-            // Formar una nube con 4-5 esferas superpuestas
-            const puff1 = new THREE.Mesh(new THREE.SphereGeometry(2.4, 8, 8), cloudMat);
-            const puff2 = new THREE.Mesh(new THREE.SphereGeometry(1.9, 8, 8), cloudMat);
-            puff2.position.set(-2.0, -0.3, 0);
-            const puff3 = new THREE.Mesh(new THREE.SphereGeometry(2.1, 8, 8), cloudMat);
-            puff3.position.set(2.2, -0.2, 0);
-            const puff4 = new THREE.Mesh(new THREE.SphereGeometry(1.6, 8, 8), cloudMat);
-            puff4.position.set(0.5, 1.2, 0.4);
+            const radius = 22 + Math.random() * 45;
+            const theta = Math.random() * Math.PI * 2;
+            const y = -10 + Math.random() * 40;
 
-            cloud.add(puff1);
-            cloud.add(puff2);
-            cloud.add(puff3);
-            cloud.add(puff4);
+            mote.position.set(
+                Math.cos(theta) * radius,
+                y,
+                Math.sin(theta) * radius
+            );
 
-            cloud.scale.set(cd.s, cd.s * 0.6, cd.s * 0.8);
-            cloud.position.set(cd.x, cd.y, cd.z);
-            cloudGroup.add(cloud);
+            this.atmosphereGroup.add(mote);
 
-            this.clouds.push({
-                mesh: cloud,
-                speed: cd.speed,
-                minX: -90,
-                maxX: 90
-            });
-        });
-
-        this.forestGroup.add(cloudGroup);
-    }
-
-    /**
-     * Mechoncitos de hierba 3D en verde lima y verde vivo
-     */
-    initGrassTufts() {
-        const tuftGroup = new THREE.Group();
-        const bladeGeo = new THREE.ConeGeometry(0.09, 0.5, 4);
-        const matA = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.GRASS_TUFT, roughness: 0.75 });
-        const matB = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.GRASS_LIME, roughness: 0.75 });
-
-        // 75 mechoncitos de hierba alrededor de las solapas de cartón
-        for (let i = 0; i < 75; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 21.0 + Math.random() * 16.0;
-            const x = Math.cos(angle) * dist;
-            const z = Math.sin(angle) * dist;
-
-            const tuft = new THREE.Group();
-            const mat = Math.random() > 0.5 ? matA : matB;
-            for (let b = 0; b < 3; b++) {
-                const blade = new THREE.Mesh(bladeGeo, mat);
-                blade.position.set((b - 1) * 0.08, 0.22, (Math.random() - 0.5) * 0.06);
-                blade.rotation.z = (b - 1) * 0.3 + (Math.random() - 0.5) * 0.15;
-                blade.rotation.y = Math.random() * Math.PI;
-                blade.castShadow = true;
-                tuft.add(blade);
-            }
-            tuft.position.set(x, -0.12, z);
-            tuftGroup.add(tuft);
-        }
-
-        this.forestGroup.add(tuftGroup);
-    }
-
-    /**
-     * Densa pradera de Flores Silvestres Coloridas (MÁS DE 160 FLORES EN 7 COLORES LLAMATIVOS)
-     */
-    initWildflowers() {
-        const flowerGroup = new THREE.Group();
-        const flowerColors = [
-            CONFIG.COLORS.FLOWER_WHITE,
-            CONFIG.COLORS.FLOWER_RED,
-            CONFIG.COLORS.FLOWER_BLUE,
-            CONFIG.COLORS.FLOWER_YELLOW,
-            CONFIG.COLORS.FLOWER_PURPLE,
-            CONFIG.COLORS.FLOWER_ORANGE,
-            CONFIG.COLORS.FLOWER_PINK
-        ];
-
-        const stemGeo = new THREE.CylinderGeometry(0.035, 0.04, 0.55, 6);
-        const stemMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.75 });
-
-        const centerGeo = new THREE.SphereGeometry(0.13, 8, 8);
-        const centerMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.FLOWER_CENTER,
-            roughness: 0.25,
-            emissive: 0xffd600,
-            emissiveIntensity: 0.2
-        });
-
-        const petalGeo = new THREE.SphereGeometry(0.1, 6, 6);
-        petalGeo.scale(1.35, 0.38, 0.85);
-
-        const flowerCount = 175; // Gran densidad para que se vea como un campo primaveral
-
-        for (let i = 0; i < flowerCount; i++) {
-            const flower = new THREE.Group();
-            const angle = Math.random() * Math.PI * 2;
-            // Distribuir en el césped exterior bordeando las solapas
-            const dist = 21.0 + Math.random() * 22.0;
-            const x = Math.cos(angle) * dist;
-            const z = Math.sin(angle) * dist;
-
-            // 1. Tallo
-            const stem = new THREE.Mesh(stemGeo, stemMat);
-            stem.position.y = 0.25;
-            stem.rotation.z = (Math.random() - 0.5) * 0.25;
-            flower.add(stem);
-
-            // 2. Corola de pétalos en color vivo
-            const colorHex = flowerColors[i % flowerColors.length];
-            const petalMat = new THREE.MeshStandardMaterial({
-                color: colorHex,
-                roughness: 0.35,
-                emissive: colorHex,
-                emissiveIntensity: 0.12
-            });
-
-            const head = new THREE.Group();
-            head.position.y = 0.52;
-
-            // Centro amarillo sol
-            const center = new THREE.Mesh(centerGeo, centerMat);
-            center.castShadow = true;
-            head.add(center);
-
-            // 5 pétalos redondos
-            const numPetals = 5;
-            for (let p = 0; p < numPetals; p++) {
-                const petal = new THREE.Mesh(petalGeo, petalMat);
-                const pAngle = (p / numPetals) * Math.PI * 2;
-                petal.position.set(
-                    Math.cos(pAngle) * 0.18,
-                    0,
-                    Math.sin(pAngle) * 0.18
-                );
-                petal.rotation.y = -pAngle;
-                petal.castShadow = true;
-                head.add(petal);
-            }
-
-            flower.add(head);
-
-            const scale = 0.85 + Math.random() * 0.5;
-            flower.scale.set(scale, scale, scale);
-            flower.position.set(x, -0.12, z);
-            flower.rotation.y = Math.random() * Math.PI * 2;
-
-            flowerGroup.add(flower);
-
-            // Mecedura suave por el viento
-            this.windSwayables.push({
-                object: head,
-                baseRotZ: head.rotation.z,
-                speed: 1.8 + Math.random() * 0.8,
-                phase: Math.random() * Math.PI * 2,
-                amplitude: 0.08
+            this.floatingMotes.push({
+                mesh: mote,
+                baseY: y,
+                speedY: 0.3 + Math.random() * 0.7,
+                wobbleSpeed: 1 + Math.random() * 2,
+                wobbleDist: 0.5 + Math.random() * 1.5,
+                phase: Math.random() * Math.PI * 2
             });
         }
 
-        this.forestGroup.add(flowerGroup);
-    }
-
-    /**
-     * Troncos caídos de madera con musgo verde y rocas decorativas
-     */
-    initLogsAndRocks() {
-        const decoGroup = new THREE.Group();
-
-        const logMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.LOG_WOOD,
-            roughness: 0.85
+        // 2. Monolitos digitales distantes (Torres de datos en el horizonte)
+        const towerGeo = new THREE.BoxGeometry(4, 60, 4);
+        const towerMat = new THREE.MeshStandardMaterial({
+            color: 0x060b17,
+            roughness: 0.4,
+            metalness: 0.9,
+            emissive: 0x0284c7,
+            emissiveIntensity: 0.08
         });
 
-        const mossMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.MOSS_GREEN,
-            roughness: 0.7
-        });
-
-        const rockMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.STONE_GRAY,
-            roughness: 0.9
-        });
-
-        // 4 Troncos caídos con musgo alrededor del claro
-        const logPositions = [
-            { x: -24, z: 23, rotY: 0.6 },
-            { x: 26, z: -22, rotY: -0.4 },
-            { x: -25, z: -24, rotY: 1.2 },
-            { x: 25, z: 24, rotY: -0.8 }
-        ];
-
-        logPositions.forEach(lp => {
-            const logGroup = new THREE.Group();
-            const logGeo = new THREE.CylinderGeometry(0.4, 0.45, 3.8, 8);
-            const log = new THREE.Mesh(logGeo, logMat);
-            log.rotation.z = Math.PI / 2;
-            log.position.y = 0.35;
-            log.castShadow = true;
-            log.receiveShadow = true;
-            logGroup.add(log);
-
-            // Parche de musgo verde sobre el tronco
-            const mossGeo = new THREE.BoxGeometry(2.4, 0.12, 0.6);
-            const moss = new THREE.Mesh(mossGeo, mossMat);
-            moss.position.set(0, 0.72, 0);
-            logGroup.add(moss);
-
-            logGroup.position.set(lp.x, -0.12, lp.z);
-            logGroup.rotation.y = lp.rotY;
-            decoGroup.add(logGroup);
-        });
-
-        // Rocas redondeadas con parches de musgo
-        for (let r = 0; r < 14; r++) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 22.0 + Math.random() * 18.0;
-            const rockGeo = new THREE.DodecahedronGeometry(0.55 + Math.random() * 0.45, 1);
-            rockGeo.scale(1.2, 0.7, 1.0);
-            const rock = new THREE.Mesh(rockGeo, rockMat);
-            rock.position.set(Math.cos(angle) * dist, 0.2, Math.sin(angle) * dist);
-            rock.rotation.set(Math.random() * 2, Math.random() * 2, Math.random() * 2);
-            rock.castShadow = true;
-            rock.receiveShadow = true;
-            decoGroup.add(rock);
+        const towerCount = 12;
+        for (let t = 0; t < towerCount; t++) {
+            const angle = (t / towerCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
+            const dist = 65 + Math.random() * 25;
+            const tower = new THREE.Mesh(towerGeo, towerMat);
+            const heightScale = 0.5 + Math.random() * 1.0;
+            tower.scale.set(1, heightScale, 1);
+            tower.position.set(
+                Math.cos(angle) * dist,
+                (60 * heightScale) / 2 - 25,
+                Math.sin(angle) * dist
+            );
+            this.atmosphereGroup.add(tower);
         }
 
-        this.forestGroup.add(decoGroup);
+        this.scene.add(this.atmosphereGroup);
     }
 
     /**
-     * Setas y Hongos Mágicos Variados (Rojos con motas blancas, Azules y Violetas)
+     * Construye la plataforma cybernetic con baldosas PBR, líneas de neón y nodos
      */
-    initMushrooms() {
-        const shroomGroup = new THREE.Group();
-
-        const capGeo = new THREE.SphereGeometry(0.38, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.55);
-        const stemGeo = new THREE.CylinderGeometry(0.12, 0.18, 0.48, 8);
-        const stemMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.MUSHROOM_STEM,
-            roughness: 0.65
-        });
-
-        const dotGeo = new THREE.SphereGeometry(0.048, 6, 6);
-        const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
-
-        const capColors = [
-            CONFIG.COLORS.MUSHROOM_CAP_RED,
-            CONFIG.COLORS.MUSHROOM_CAP_RED,
-            CONFIG.COLORS.MUSHROOM_CAP_BLUE,
-            CONFIG.COLORS.MUSHROOM_CAP_PURPLE
-        ];
-
-        // 10 grupitos de setas distribuidos por todo el claro
-        const clusters = [
-            { x: 21.5, z: 21.5 },
-            { x: -21.5, z: 21.5 },
-            { x: 21.5, z: -21.5 },
-            { x: -21.5, z: -21.5 },
-            { x: 0, z: 22.8 },
-            { x: 0, z: -22.8 },
-            { x: -23.0, z: 0 },
-            { x: 23.0, z: 0 },
-            { x: 18.0, z: 25.0 },
-            { x: -18.0, z: -25.0 }
-        ];
-
-        clusters.forEach((c, idx) => {
-            const countInCluster = 2 + Math.floor(Math.random() * 2);
-            const chosenColor = capColors[idx % capColors.length];
-            const capMat = new THREE.MeshStandardMaterial({
-                color: chosenColor,
-                roughness: 0.28,
-                emissive: chosenColor,
-                emissiveIntensity: 0.18
-            });
-
-            for (let k = 0; k < countInCluster; k++) {
-                const shroom = new THREE.Group();
-
-                const stem = new THREE.Mesh(stemGeo, stemMat);
-                stem.position.y = 0.22;
-                stem.castShadow = true;
-                shroom.add(stem);
-
-                const cap = new THREE.Mesh(capGeo, capMat);
-                cap.position.y = 0.42;
-                cap.castShadow = true;
-                shroom.add(cap);
-
-                // Motitas blancas
-                const dotPositions = [
-                    { x: 0, y: 0.35, z: 0 },
-                    { x: 0.2, y: 0.24, z: 0.12 },
-                    { x: -0.18, y: 0.24, z: 0.14 },
-                    { x: 0.09, y: 0.24, z: -0.2 },
-                    { x: -0.14, y: 0.22, z: -0.16 }
-                ];
-                dotPositions.forEach(dp => {
-                    const dot = new THREE.Mesh(dotGeo, dotMat);
-                    dot.position.set(dp.x, cap.position.y + dp.y, dp.z);
-                    shroom.add(dot);
-                });
-
-                const scale = 0.75 + Math.random() * 0.55;
-                shroom.scale.set(scale, scale, scale);
-                shroom.position.set(
-                    c.x + (Math.random() - 0.5) * 1.8,
-                    -0.12,
-                    c.z + (Math.random() - 0.5) * 1.8
-                );
-                shroom.rotation.y = Math.random() * Math.PI * 2;
-                shroomGroup.add(shroom);
-            }
-        });
-
-        this.forestGroup.add(shroomGroup);
-    }
-
-    /**
-     * Bosque Denso de Árboles (MÁS DE 60 ÁRBOLES EN 3 CAPAS DE PROFUNDIDAD)
-     */
-    initDenseForest() {
-        const treesGroup = new THREE.Group();
-
-        // Materiales de corteza
-        const oakTrunkMat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_TRUNK, roughness: 0.85 });
-        const birchTrunkMat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_BIRCH, roughness: 0.65 });
-        const birchSpotMat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_BIRCH_SPOT, roughness: 0.8 });
-
-        // Materiales de hojas súper vibrantes
-        const leafMatDeep = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_LEAVES_A, roughness: 0.5 });
-        const leafMatApple = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_LEAVES_B, roughness: 0.5 });
-        const leafMatLime = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_LEAVES_C, roughness: 0.45, emissive: 0x16a34a, emissiveIntensity: 0.08 });
-        const leafMatMint = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_LEAVES_MINT, roughness: 0.5 });
-        const leafMatGold = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_LEAVES_GOLD, roughness: 0.45, emissive: 0xf59e0b, emissiveIntensity: 0.15 });
-
-        const appleMat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.TREE_APPLE, roughness: 0.25, emissive: 0x990022, emissiveIntensity: 0.3 });
-        const appleGeo = new THREE.SphereGeometry(0.22, 6, 6);
-
-        // 62 árboles distribuidos en 3 capas de distancia
-        const treeCount = 62;
-        for (let i = 0; i < treeCount; i++) {
-            const angle = (i / treeCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.18;
-            // Capa 1: 23-32 | Capa 2: 32-44 | Capa 3: 44-58
-            const tier = i % 3;
-            let dist;
-            if (tier === 0) dist = 23.5 + Math.random() * 8.0;
-            else if (tier === 1) dist = 32.0 + Math.random() * 11.0;
-            else dist = 43.0 + Math.random() * 15.0;
-
-            const x = Math.cos(angle) * dist;
-            const z = Math.sin(angle) * dist;
-
-            const treeType = i % 5;
-            const tree = new THREE.Group();
-
-            if (treeType === 0) {
-                // 1. ÁRBOL FRUTAL CON MANZANITAS ROJAS VIVAS
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.65, 3.8, 8), oakTrunkMat);
-                trunk.position.y = 1.9;
-                trunk.castShadow = true;
-                tree.add(trunk);
-
-                const canopyGroup = new THREE.Group();
-                const mainCanopy = new THREE.Mesh(new THREE.SphereGeometry(2.4, 9, 9), leafMatApple);
-                mainCanopy.position.y = 4.2;
-                mainCanopy.castShadow = true;
-                canopyGroup.add(mainCanopy);
-
-                const subCanopyA = new THREE.Mesh(new THREE.SphereGeometry(1.6, 7, 7), leafMatLime);
-                subCanopyA.position.set(0.9, 5.0, 0.4);
-                subCanopyA.castShadow = true;
-                canopyGroup.add(subCanopyA);
-
-                // 4 manzanitas rojas colgando en la copa
-                const applePos = [
-                    { x: 1.2, y: 3.8, z: 1.2 },
-                    { x: -1.3, y: 4.1, z: 0.8 },
-                    { x: 0.2, y: 3.6, z: 2.1 },
-                    { x: -0.8, y: 4.4, z: -1.4 }
-                ];
-                applePos.forEach(ap => {
-                    const app = new THREE.Mesh(appleGeo, appleMat);
-                    app.position.set(ap.x, ap.y, ap.z);
-                    canopyGroup.add(app);
-                });
-
-                tree.add(canopyGroup);
-
-                this.windSwayables.push({
-                    object: canopyGroup,
-                    baseRotZ: 0,
-                    speed: 1.4,
-                    phase: i * 0.6,
-                    amplitude: 0.032
-                });
-
-            } else if (treeType === 1) {
-                // 2. PINO CONÍFERO SILVESTRE ESCALONADO
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.52, 3.4, 8), oakTrunkMat);
-                trunk.position.y = 1.7;
-                trunk.castShadow = true;
-                tree.add(trunk);
-
-                const pineGroup = new THREE.Group();
-                const cone1 = new THREE.Mesh(new THREE.ConeGeometry(2.5, 2.3, 8), leafMatDeep);
-                cone1.position.y = 3.3;
-                cone1.castShadow = true;
-                pineGroup.add(cone1);
-
-                const cone2 = new THREE.Mesh(new THREE.ConeGeometry(2.0, 2.0, 8), leafMatMint);
-                cone2.position.y = 4.6;
-                cone2.castShadow = true;
-                pineGroup.add(cone2);
-
-                const cone3 = new THREE.Mesh(new THREE.ConeGeometry(1.4, 1.8, 8), leafMatLime);
-                cone3.position.y = 5.8;
-                cone3.castShadow = true;
-                pineGroup.add(cone3);
-
-                tree.add(pineGroup);
-
-                this.windSwayables.push({
-                    object: pineGroup,
-                    baseRotZ: 0,
-                    speed: 1.2,
-                    phase: i * 0.5,
-                    amplitude: 0.026
-                });
-
-            } else if (treeType === 2) {
-                // 3. ABEDUL BLANCO NÓRDICO CON COPA MINT
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.45, 4.2, 8), birchTrunkMat);
-                trunk.position.y = 2.1;
-                trunk.castShadow = true;
-                tree.add(trunk);
-
-                // Motitas oscuras en la corteza blanca
-                for (let s = 0; s < 5; s++) {
-                    const spot = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.04), birchSpotMat);
-                    spot.position.set(0.32, 1.2 + s * 0.65, 0);
-                    spot.rotation.y = s * 1.3;
-                    tree.add(spot);
-                }
-
-                const canopyGroup = new THREE.Group();
-                const birchCanopy = new THREE.Mesh(new THREE.SphereGeometry(2.2, 8, 8), leafMatMint);
-                birchCanopy.scale.set(1.0, 1.3, 1.0);
-                birchCanopy.position.y = 4.8;
-                birchCanopy.castShadow = true;
-                canopyGroup.add(birchCanopy);
-                tree.add(canopyGroup);
-
-                this.windSwayables.push({
-                    object: canopyGroup,
-                    baseRotZ: 0,
-                    speed: 1.6,
-                    phase: i * 0.7,
-                    amplitude: 0.035
-                });
-
-            } else if (treeType === 3) {
-                // 4. ÁRBOL FRONDOSO VERDE LIMA LUMINOSO
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.58, 3.5, 8), oakTrunkMat);
-                trunk.position.y = 1.75;
-                trunk.castShadow = true;
-                tree.add(trunk);
-
-                const canopyGroup = new THREE.Group();
-                const c1 = new THREE.Mesh(new THREE.SphereGeometry(2.3, 9, 9), leafMatLime);
-                c1.position.y = 4.3;
-                c1.castShadow = true;
-                canopyGroup.add(c1);
-
-                const c2 = new THREE.Mesh(new THREE.SphereGeometry(1.5, 7, 7), leafMatApple);
-                c2.position.set(-0.8, 4.9, 0.5);
-                c2.castShadow = true;
-                canopyGroup.add(c2);
-
-                tree.add(canopyGroup);
-
-                this.windSwayables.push({
-                    object: canopyGroup,
-                    baseRotZ: 0,
-                    speed: 1.3,
-                    phase: i * 0.4,
-                    amplitude: 0.03
-                });
-
-            } else {
-                // 5. ÁRBOL DORADO DE SOL
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.58, 3.6, 8), oakTrunkMat);
-                trunk.position.y = 1.8;
-                trunk.castShadow = true;
-                tree.add(trunk);
-
-                const canopyGroup = new THREE.Group();
-                const cGold = new THREE.Mesh(new THREE.SphereGeometry(2.2, 8, 8), leafMatGold);
-                cGold.position.y = 4.4;
-                cGold.castShadow = true;
-                canopyGroup.add(cGold);
-                tree.add(canopyGroup);
-
-                this.windSwayables.push({
-                    object: canopyGroup,
-                    baseRotZ: 0,
-                    speed: 1.5,
-                    phase: i * 0.8,
-                    amplitude: 0.032
-                });
-            }
-
-            const scale = 0.85 + Math.random() * 0.45;
-            tree.scale.set(scale, scale, scale);
-            tree.position.set(x, -0.12, z);
-            tree.rotation.y = Math.random() * Math.PI * 2;
-            treesGroup.add(tree);
-        }
-
-        // Arbustos de bayas esponjosos en verde y lima
-        const bushGeo = new THREE.SphereGeometry(1.15, 8, 8);
-        bushGeo.scale(1.3, 0.75, 1.1);
-        const bushMat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.BUSH_GREEN, roughness: 0.6 });
-        const berryMat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.BERRY_RED, roughness: 0.2, emissive: 0x990011, emissiveIntensity: 0.3 });
-        const berryGeo = new THREE.SphereGeometry(0.12, 5, 5);
-
-        for (let b = 0; b < 24; b++) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 22.0 + Math.random() * 18.0;
-            const bushGroup = new THREE.Group();
-            const bush = new THREE.Mesh(bushGeo, bushMat);
-            bush.castShadow = true;
-            bush.receiveShadow = true;
-            bushGroup.add(bush);
-
-            // 3 bayas brillantes en el arbusto
-            for (let by = 0; by < 3; by++) {
-                const berry = new THREE.Mesh(berryGeo, berryMat);
-                berry.position.set((by - 1) * 0.35, 0.45, 0.55 + Math.random() * 0.2);
-                bushGroup.add(berry);
-            }
-
-            bushGroup.position.set(Math.cos(angle) * dist, 0.35, Math.sin(angle) * dist);
-            treesGroup.add(bushGroup);
-        }
-
-        this.forestGroup.add(treesGroup);
-    }
-
-    /**
-     * ====================================================================
-     * 2. LA CAJA DE CARTÓN KRAFT ABIERTA (ESTILO IMAGEN 2)
-     * ====================================================================
-     * Cuadrícula limpia y contrastada, 4 solapas 100% exteriores que
-     * no obstruyen el juego en lo absoluto.
-     */
-    initCardboardBox() {
-        this.boxGroup = new THREE.Group();
+    initCyberPlatform() {
+        this.platformGroup = new THREE.Group();
 
         const tileSize = CONFIG.CELL_SIZE;
-        const totalW = CONFIG.GRID_WIDTH * tileSize;  // 27.0
-        const totalH = CONFIG.GRID_HEIGHT * tileSize; // 27.0
+        const totalW = CONFIG.GRID_WIDTH * tileSize;
+        const totalH = CONFIG.GRID_HEIGHT * tileSize;
 
-        // 2.1 Fondo interior de la caja (Cuadrícula kraft cálida y nítida)
-        this.initCardboardFloor(totalW, totalH, tileSize);
+        // 1. Bloque de base flotante metálico oscuro biselado
+        const baseThickness = 1.4;
+        const baseGeo = new THREE.BoxGeometry(totalW + 1.2, baseThickness, totalH + 1.2);
+        const baseMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.PLATFORM_BASE,
+            roughness: 0.3,
+            metalness: 0.85
+        });
+        const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+        baseMesh.position.y = -baseThickness / 2 - 0.05;
+        baseMesh.receiveShadow = true;
+        this.platformGroup.add(baseMesh);
 
-        // 2.2 Base de soporte inferior
-        this.initCardboardBase(totalW, totalH);
+        // 2. Marco exterior biselado con resplandor neón
+        const rimGeo = new THREE.BoxGeometry(totalW + 1.5, 0.15, totalH + 1.5);
+        const rimMat = new THREE.MeshStandardMaterial({
+            color: 0x0369a1,
+            emissive: 0x00f5ff,
+            emissiveIntensity: 0.45,
+            roughness: 0.2,
+            metalness: 0.9
+        });
+        const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+        rimMesh.position.y = -0.05;
+        this.platformGroup.add(rimMesh);
 
-        // 2.3 Paredes de la caja de cartón (4 lados)
-        this.initCardboardWalls(totalW, totalH);
-
-        // 2.4 Las 4 Solapas abiertas desplegadas hacia afuera (según la imagen)
-        this.initCardboardFlaps(totalW, totalH);
-
-        // 2.5 Etiqueta de envío en una de las solapas exteriores
-        this.initShippingLabel(totalW, totalH);
-
-        this.scene.add(this.boxGroup);
-    }
-
-    /**
-     * Suelo interior de la caja de cartón (Baldosas kraft cálidas estilo imagen 2)
-     */
-    initCardboardFloor(totalW, totalH, tileSize) {
-        const floorGroup = new THREE.Group();
-
-        const matLight = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_LIGHT,
-            roughness: 0.85,
-            metalness: 0.02
+        // 3. Cuadrícula de Baldosas Obsidian / Grafito con reflectividad PBR
+        const tileDarkMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.TILE_DARK,
+            roughness: 0.22,
+            metalness: 0.75
         });
 
-        const matDark = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_DARK,
-            roughness: 0.85,
-            metalness: 0.02
+        const tileLightMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.TILE_LIGHT,
+            roughness: 0.22,
+            metalness: 0.75
         });
 
-        const tileGeo = new THREE.BoxGeometry(tileSize * 0.985, 0.18, tileSize * 0.985);
+        // Baldosa con separación para canal de neón
+        const tileGeo = new THREE.BoxGeometry(tileSize * 0.94, 0.16, tileSize * 0.94);
 
         for (let x = 0; x < CONFIG.GRID_WIDTH; x++) {
             for (let z = 0; z < CONFIG.GRID_HEIGHT; z++) {
                 const isEven = (x + z) % 2 === 0;
-                const mat = isEven ? matLight : matDark;
+                const mat = isEven ? tileLightMat : tileDarkMat;
 
                 const tile = new THREE.Mesh(tileGeo, mat);
                 tile.position.set(
                     (x - (CONFIG.GRID_WIDTH - 1) / 2) * tileSize,
-                    -0.09,
+                    -0.08,
                     (z - (CONFIG.GRID_HEIGHT - 1) / 2) * tileSize
                 );
                 tile.receiveShadow = true;
-                floorGroup.add(tile);
+                this.platformGroup.add(tile);
             }
         }
 
-        // Costura central de solapas en el fondo de la caja
-        const seamMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_SEAM,
-            roughness: 0.9
-        });
-        const seamGeo = new THREE.BoxGeometry(0.08, 0.015, totalH * 0.98);
-        const centerSeam = new THREE.Mesh(seamGeo, seamMat);
-        centerSeam.position.set(0, 0.005, 0);
-        centerSeam.receiveShadow = true;
-        floorGroup.add(centerSeam);
+        // 4. Red de cuadrícula de neón cian luminiscente en los canales entre baldosas
+        const gridCanvas = document.createElement('canvas');
+        gridCanvas.width = 1024;
+        gridCanvas.height = 1024;
+        const gctx = gridCanvas.getContext('2d');
 
-        // Cinta adhesiva de embalaje translúcida a lo largo de la costura
-        const tapeMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_TAPE,
-            roughness: 0.2,
-            metalness: 0.05,
-            transparent: true,
-            opacity: 0.55
-        });
-        const tapeGeo = new THREE.BoxGeometry(0.85, 0.012, totalH * 0.96);
-        const tapeMesh = new THREE.Mesh(tapeGeo, tapeMat);
-        tapeMesh.position.set(0, 0.006, 0);
-        tapeMesh.receiveShadow = true;
-        floorGroup.add(tapeMesh);
+        gctx.fillStyle = '#050a17';
+        gctx.fillRect(0, 0, 1024, 1024);
 
-        this.boxGroup.add(floorGroup);
-    }
+        // Líneas de neón con gradiente de luz
+        gctx.strokeStyle = '#00f5ff';
+        gctx.lineWidth = 4;
+        gctx.shadowColor = '#00f5ff';
+        gctx.shadowBlur = 12;
 
-    /**
-     * Base de soporte inferior de la caja
-     */
-    initCardboardBase(totalW, totalH) {
-        const baseGeo = new THREE.BoxGeometry(totalW + 0.2, 0.26, totalH + 0.2);
-        const baseMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_BASE,
-            roughness: 0.92
-        });
-        const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-        baseMesh.position.y = -0.22;
-        baseMesh.receiveShadow = true;
-        this.boxGroup.add(baseMesh);
-    }
+        const step = 1024 / CONFIG.GRID_WIDTH;
+        for (let i = 0; i <= CONFIG.GRID_WIDTH; i++) {
+            const p = i * step;
+            gctx.beginPath();
+            gctx.moveTo(p, 0);
+            gctx.lineTo(p, 1024);
+            gctx.stroke();
 
-    /**
-     * Paredes de cartón 3D (forman el perímetro de la caja)
-     */
-    initCardboardWalls(totalW, totalH) {
-        const wallsGroup = new THREE.Group();
-        const wallThickness = 0.6;
-        const wallHeight = CONFIG.WALL_HEIGHT;
-
-        const wallMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_WALL,
-            roughness: 0.84,
-            metalness: 0.02
-        });
-
-        const rimMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_RIM,
-            roughness: 0.78,
-            metalness: 0.05
-        });
-
-        const halfW = totalW / 2;
-        const halfH = totalH / 2;
-        const halfThick = wallThickness / 2;
-
-        const createWall = (w, len, x, z) => {
-            const section = new THREE.Group();
-
-            const bodyGeo = new THREE.BoxGeometry(w, wallHeight, len);
-            const body = new THREE.Mesh(bodyGeo, wallMat);
-            body.position.y = wallHeight / 2;
-            body.castShadow = true;
-            body.receiveShadow = true;
-            section.add(body);
-
-            const rimGeo = new THREE.BoxGeometry(w + 0.04, 0.14, len + 0.04);
-            const rim = new THREE.Mesh(rimGeo, rimMat);
-            rim.position.y = wallHeight + 0.07;
-            rim.castShadow = true;
-            section.add(rim);
-
-            section.position.set(x, 0, z);
-            return section;
-        };
-
-        // Pared Norte
-        wallsGroup.add(createWall(totalW + wallThickness * 2, wallThickness, 0, -halfH - halfThick));
-        // Pared Sur
-        wallsGroup.add(createWall(totalW + wallThickness * 2, wallThickness, 0, halfH + halfThick));
-        // Pared Oeste
-        wallsGroup.add(createWall(wallThickness, totalH, -halfW - halfThick, 0));
-        // Pared Este
-        wallsGroup.add(createWall(wallThickness, totalH, halfW + halfThick, 0));
-
-        this.boxGroup.add(wallsGroup);
-    }
-
-    /**
-     * Las 4 Solapas Abiertas desplegadas 100% HACIA EL EXTERIOR (en cruz)
-     */
-    initCardboardFlaps(totalW, totalH) {
-        const flapsGroup = new THREE.Group();
-        const flapThickness = 0.12;
-        const flapLength = 6.2;
-        const wallThickness = 0.6;
-        const halfW = totalW / 2;
-        const halfH = totalH / 2;
-        const wallHeight = CONFIG.WALL_HEIGHT;
-
-        const flapMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_FLAP,
-            roughness: 0.84,
-            metalness: 0.02
-        });
-
-        const flapRimMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_RIM,
-            roughness: 0.8
-        });
-
-        const creaseMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CARDBOARD_SEAM,
-            roughness: 0.9
-        });
-
-        // 1. SOLAPA NORTE (-Z hacia afuera)
-        const flapNorth = new THREE.Group();
-        const bodyNorth = new THREE.Mesh(new THREE.BoxGeometry(totalW, flapThickness, flapLength), flapMat);
-        bodyNorth.position.z = -flapLength / 2;
-        bodyNorth.castShadow = true;
-        bodyNorth.receiveShadow = true;
-        flapNorth.add(bodyNorth);
-
-        const rimNorth = new THREE.Mesh(new THREE.BoxGeometry(totalW, flapThickness * 1.05, 0.12), flapRimMat);
-        rimNorth.position.z = -flapLength;
-        rimNorth.castShadow = true;
-        flapNorth.add(rimNorth);
-
-        const creaseNorth = new THREE.Mesh(new THREE.BoxGeometry(totalW, 0.02, 0.08), creaseMat);
-        creaseNorth.position.set(0, flapThickness / 2 + 0.01, -0.15);
-        flapNorth.add(creaseNorth);
-
-        flapNorth.position.set(0, wallHeight + 0.04, -halfH - wallThickness);
-        flapNorth.rotation.x = 0.12;
-        flapsGroup.add(flapNorth);
-
-        // 2. SOLAPA SUR (+Z hacia afuera)
-        const flapSouth = new THREE.Group();
-        const bodySouth = new THREE.Mesh(new THREE.BoxGeometry(totalW, flapThickness, flapLength), flapMat);
-        bodySouth.position.z = flapLength / 2;
-        bodySouth.castShadow = true;
-        bodySouth.receiveShadow = true;
-        flapSouth.add(bodySouth);
-
-        const rimSouth = new THREE.Mesh(new THREE.BoxGeometry(totalW, flapThickness * 1.05, 0.12), flapRimMat);
-        rimSouth.position.z = flapLength;
-        rimSouth.castShadow = true;
-        flapSouth.add(rimSouth);
-
-        const creaseSouth = new THREE.Mesh(new THREE.BoxGeometry(totalW, 0.02, 0.08), creaseMat);
-        creaseSouth.position.set(0, flapThickness / 2 + 0.01, 0.15);
-        flapSouth.add(creaseSouth);
-
-        flapSouth.position.set(0, wallHeight + 0.04, halfH + wallThickness);
-        flapSouth.rotation.x = -0.12;
-        flapsGroup.add(flapSouth);
-
-        // 3. SOLAPA OESTE (-X hacia afuera)
-        const flapWest = new THREE.Group();
-        const bodyWest = new THREE.Mesh(new THREE.BoxGeometry(flapLength, flapThickness, totalH), flapMat);
-        bodyWest.position.x = -flapLength / 2;
-        bodyWest.castShadow = true;
-        bodyWest.receiveShadow = true;
-        flapWest.add(bodyWest);
-
-        const rimWest = new THREE.Mesh(new THREE.BoxGeometry(0.12, flapThickness * 1.05, totalH), flapRimMat);
-        rimWest.position.x = -flapLength;
-        rimWest.castShadow = true;
-        flapWest.add(rimWest);
-
-        const creaseWest = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.02, totalH), creaseMat);
-        creaseWest.position.set(-0.15, flapThickness / 2 + 0.01, 0);
-        flapWest.add(creaseWest);
-
-        flapWest.position.set(-halfW - wallThickness, wallHeight + 0.04, 0);
-        flapWest.rotation.z = 0.12;
-        flapsGroup.add(flapWest);
-
-        // 4. SOLAPA ESTE (+X hacia afuera)
-        const flapEast = new THREE.Group();
-        const bodyEast = new THREE.Mesh(new THREE.BoxGeometry(flapLength, flapThickness, totalH), flapMat);
-        bodyEast.position.x = flapLength / 2;
-        bodyEast.castShadow = true;
-        bodyEast.receiveShadow = true;
-        flapEast.add(bodyEast);
-
-        const rimEast = new THREE.Mesh(new THREE.BoxGeometry(0.12, flapThickness * 1.05, totalH), flapRimMat);
-        rimEast.position.x = flapLength;
-        rimEast.castShadow = true;
-        flapEast.add(rimEast);
-
-        const creaseEast = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.02, totalH), creaseMat);
-        creaseEast.position.set(0.15, flapThickness / 2 + 0.01, 0);
-        flapEast.add(creaseEast);
-
-        flapEast.position.set(halfW + wallThickness, wallHeight + 0.04, 0);
-        flapEast.rotation.z = -0.12;
-        flapsGroup.add(flapEast);
-
-        this.boxGroup.add(flapsGroup);
-    }
-
-    /**
-     * Etiqueta de paquetería y sello estampados sobre las solapas exteriores
-     */
-    initShippingLabel(totalW, totalH) {
-        const labelTexture = this.generateShippingLabelTexture();
-        const labelGeo = new THREE.PlaneGeometry(3.6, 2.2);
-        const labelMat = new THREE.MeshBasicMaterial({ map: labelTexture, transparent: false });
-        const labelMesh = new THREE.Mesh(labelGeo, labelMat);
-        labelMesh.rotation.x = -Math.PI / 2 + 0.12;
-        labelMesh.position.set(3.5, CONFIG.WALL_HEIGHT + 0.04, totalH / 2 + 3.5);
-        labelMesh.receiveShadow = true;
-        this.boxGroup.add(labelMesh);
-
-        const stampTexture = this.generateStampTexture();
-        const stampGeo = new THREE.PlaneGeometry(3.4, 3.4);
-        const stampMat = new THREE.MeshBasicMaterial({ map: stampTexture, transparent: true, opacity: 0.75 });
-        const stampMesh = new THREE.Mesh(stampGeo, stampMat);
-        stampMesh.rotation.x = -Math.PI / 2 - 0.12;
-        stampMesh.position.set(-3.5, CONFIG.WALL_HEIGHT + 0.04, -totalH / 2 - 3.5);
-        stampMesh.receiveShadow = true;
-        this.boxGroup.add(stampMesh);
-    }
-
-    generateStampTexture() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-
-        ctx.clearRect(0, 0, 256, 256);
-        ctx.strokeStyle = '#3d200a';
-        ctx.fillStyle = '#3d200a';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(18, 18, 220, 220);
-
-        ctx.beginPath();
-        ctx.moveTo(70, 110);
-        ctx.lineTo(70, 50);
-        ctx.lineTo(50, 70);
-        ctx.moveTo(70, 50);
-        ctx.lineTo(90, 70);
-
-        ctx.moveTo(186, 110);
-        ctx.lineTo(186, 50);
-        ctx.lineTo(166, 70);
-        ctx.moveTo(186, 50);
-        ctx.lineTo(206, 70);
-        ctx.stroke();
-
-        ctx.fillRect(45, 120, 166, 8);
-        ctx.font = 'bold 22px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('THIS SIDE UP', 128, 160);
-
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText('♻️ 100% RECYCLED', 128, 195);
-        ctx.fillText('FRAGILE // HANDLE WITH CARE', 128, 222);
-
-        return new THREE.CanvasTexture(canvas);
-    }
-
-    generateShippingLabelTexture() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 160;
-        const ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(0, 0, 256, 160);
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(4, 4, 248, 152);
-
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText('📦 SNAKE 3D EXPRESS', 16, 26);
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '10px monospace';
-        ctx.fillText('PRIORITY AIR MAIL — ENCHANTED FOREST', 16, 42);
-
-        ctx.fillStyle = '#0f172a';
-        let barX = 16;
-        while (barX < 240) {
-            const w = (Math.random() > 0.5 ? 4 : 2);
-            ctx.fillRect(barX, 55, w, 55);
-            barX += w + (Math.random() > 0.4 ? 3 : 2);
+            gctx.beginPath();
+            gctx.moveTo(0, p);
+            gctx.lineTo(1024, p);
+            gctx.stroke();
         }
 
-        ctx.font = 'bold 12px monospace';
-        ctx.fillStyle = '#1e293b';
-        ctx.fillText('* SNK-3D-2026-FOREST *', 40, 125);
+        // Nodos luminosos en intersecciones
+        gctx.fillStyle = '#ffffff';
+        for (let x = 0; x <= CONFIG.GRID_WIDTH; x++) {
+            for (let y = 0; y <= CONFIG.GRID_HEIGHT; y++) {
+                gctx.beginPath();
+                gctx.arc(x * step, y * step, 3.5, 0, Math.PI * 2);
+                gctx.fill();
+            }
+        }
 
-        ctx.strokeStyle = '#dc2626';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(170, 132, 70, 20);
-        ctx.fillStyle = '#dc2626';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('VERIFIED', 180, 146);
+        // Emblema central de precisión cyber
+        gctx.strokeStyle = '#00ff88';
+        gctx.lineWidth = 6;
+        gctx.shadowColor = '#00ff88';
+        gctx.beginPath();
+        gctx.arc(512, 512, 110, 0, Math.PI * 2);
+        gctx.stroke();
 
-        return new THREE.CanvasTexture(canvas);
+        gctx.strokeStyle = '#00f5ff';
+        gctx.lineWidth = 3;
+        gctx.beginPath();
+        gctx.arc(512, 512, 130, 0, Math.PI * 2);
+        gctx.stroke();
+
+        const gridTexture = new THREE.CanvasTexture(gridCanvas);
+        const gridPlaneGeo = new THREE.PlaneGeometry(totalW, totalH);
+        const gridPlaneMat = new THREE.MeshBasicMaterial({
+            map: gridTexture,
+            transparent: true,
+            opacity: 0.35,
+            blending: THREE.AdditiveBlending
+        });
+        const gridPlane = new THREE.Mesh(gridPlaneGeo, gridPlaneMat);
+        gridPlane.rotation.x = -Math.PI / 2;
+        gridPlane.position.y = 0.005;
+        this.platformGroup.add(gridPlane);
+
+        this.scene.add(this.platformGroup);
     }
 
     /**
-     * ====================================================================
-     * 3. SISTEMA DE PARTÍCULAS
-     * ====================================================================
+     * Barreras de Plasma Perimetrales (Paredes 3D) con pilones en las 4 esquinas
+     */
+    initPlasmaBoundaries() {
+        this.boundariesGroup = new THREE.Group();
+
+        const tileSize = CONFIG.CELL_SIZE;
+        const totalW = CONFIG.GRID_WIDTH * tileSize;
+        const totalH = CONFIG.GRID_HEIGHT * tileSize;
+        const halfW = totalW / 2;
+        const halfH = totalH / 2;
+        const wallH = CONFIG.WALL_HEIGHT;
+
+        // Materiales de los Pilones
+        const pylonMetalMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.PYLON_DARK,
+            roughness: 0.25,
+            metalness: 0.9
+        });
+
+        const pylonCoreMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.PYLON_CORE,
+            emissive: CONFIG.COLORS.PYLON_CORE,
+            emissiveIntensity: 1.2,
+            roughness: 0.1
+        });
+
+        // 1. Pilones de Esquina (Corner Emitter Pylons)
+        const corners = [
+            { x: -halfW - 0.4, z: -halfH - 0.4 },
+            { x:  halfW + 0.4, z: -halfH - 0.4 },
+            { x:  halfW + 0.4, z:  halfH + 0.4 },
+            { x: -halfW - 0.4, z:  halfH + 0.4 }
+        ];
+
+        corners.forEach(pos => {
+            const pylon = new THREE.Group();
+
+            // Base octogonal
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 0.4, 8), pylonMetalMat);
+            base.position.y = 0.2;
+            base.castShadow = true;
+            pylon.add(base);
+
+            // Columna principal
+            const col = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, wallH * 1.3, 8), pylonMetalMat);
+            col.position.y = (wallH * 1.3) / 2;
+            col.castShadow = true;
+            pylon.add(col);
+
+            // Núcleo emisor de plasma (cristal neón)
+            const core = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, wallH * 0.9, 8), pylonCoreMat);
+            core.position.y = wallH * 0.7;
+            pylon.add(core);
+
+            // Anillos de confinamiento
+            const ringGeo = new THREE.TorusGeometry(0.42, 0.05, 8, 16);
+            const ring1 = new THREE.Mesh(ringGeo, pylonCoreMat);
+            ring1.rotation.x = Math.PI / 2;
+            ring1.position.y = wallH * 0.4;
+            pylon.add(ring1);
+
+            const ring2 = new THREE.Mesh(ringGeo, pylonCoreMat);
+            ring2.rotation.x = Math.PI / 2;
+            ring2.position.y = wallH * 1.1;
+            pylon.add(ring2);
+
+            // Luz puntual en cada pilón
+            const pLight = new THREE.PointLight(CONFIG.COLORS.PYLON_CORE, 0.9, 6.0);
+            pLight.position.y = wallH * 0.8;
+            pylon.add(pLight);
+
+            pylon.position.set(pos.x, 0, pos.z);
+            this.boundariesGroup.add(pylon);
+        });
+
+        // 2. Rieles y Rayos de Plasma (4 Muros Perimetrales)
+        const trackMat = new THREE.MeshStandardMaterial({
+            color: 0x0f172a,
+            roughness: 0.35,
+            metalness: 0.85
+        });
+
+        const plasmaMat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.BARRIER_BEAM,
+            emissive: CONFIG.COLORS.BARRIER_BEAM,
+            emissiveIntensity: 0.9,
+            roughness: 0.1,
+            metalness: 0.3
+        });
+
+        const shieldMat = new THREE.MeshBasicMaterial({
+            color: CONFIG.COLORS.BARRIER_GLOW,
+            transparent: true,
+            opacity: 0.14,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending
+        });
+
+        const createPlasmaWall = (length, isHorizontal, x, z) => {
+            const wallGroup = new THREE.Group();
+
+            // Riel inferior metálico
+            const trackGeo = new THREE.BoxGeometry(
+                isHorizontal ? length : 0.45,
+                0.22,
+                isHorizontal ? 0.45 : length
+            );
+            const track = new THREE.Mesh(trackGeo, trackMat);
+            track.position.y = 0.11;
+            track.castShadow = true;
+            track.receiveShadow = true;
+            wallGroup.add(track);
+
+            // Haz de plasma láser superior
+            const beamGeo = new THREE.CylinderGeometry(0.12, 0.12, length, 12);
+            const beam = new THREE.Mesh(beamGeo, plasmaMat);
+            beam.rotation.z = isHorizontal ? Math.PI / 2 : 0;
+            if (!isHorizontal) beam.rotation.x = Math.PI / 2;
+            beam.position.y = wallH;
+            wallGroup.add(beam);
+            this.plasmaBeams.push(beam);
+
+            // Cortina de plasma translúcida
+            const curtainGeo = new THREE.PlaneGeometry(
+                length,
+                wallH * 0.9
+            );
+            const curtain = new THREE.Mesh(curtainGeo, shieldMat);
+            curtain.position.y = wallH * 0.52;
+            if (!isHorizontal) curtain.rotation.y = Math.PI / 2;
+            wallGroup.add(curtain);
+
+            wallGroup.position.set(x, 0, z);
+            return wallGroup;
+        };
+
+        // Muros Norte, Sur, Este, Oeste
+        this.boundariesGroup.add(createPlasmaWall(totalW, true, 0, -halfH - 0.25));
+        this.boundariesGroup.add(createPlasmaWall(totalW, true, 0, halfH + 0.25));
+        this.boundariesGroup.add(createPlasmaWall(totalH, false, -halfW - 0.25, 0));
+        this.boundariesGroup.add(createPlasmaWall(totalH, false, halfW + 0.25, 0));
+
+        this.scene.add(this.boundariesGroup);
+    }
+
+    /**
+     * Sistema de Partículas Sci-Fi de Alto Rendimiento
      */
     initParticleSystem() {
         this.particleGroup = new THREE.Group();
         this.scene.add(this.particleGroup);
     }
 
-    burstEat(position, colorHex = CONFIG.COLORS.APPLE_RED) {
-        const count = 22;
-        const geo = new THREE.SphereGeometry(0.2, 8, 8);
-        const mat = new THREE.MeshStandardMaterial({
+    /**
+     * Estallido de energía y chispas al recolectar núcleo
+     */
+    burstEat(position, colorHex = CONFIG.COLORS.CORE_RED_PRIMARY) {
+        const count = 24;
+        const sparkGeo = new THREE.SphereGeometry(0.16, 6, 6);
+        const sparkMat = new THREE.MeshStandardMaterial({
             color: colorHex,
-            roughness: 0.25,
             emissive: colorHex,
-            emissiveIntensity: 0.35
+            emissiveIntensity: 1.2,
+            roughness: 0.1
         });
 
+        // 1. Chispas de plasma expulsadas en 360 grados
         for (let i = 0; i < count; i++) {
-            const p = new THREE.Mesh(geo, mat.clone());
+            const p = new THREE.Mesh(sparkGeo, sparkMat);
             p.position.copy(position);
 
             const angle = Math.random() * Math.PI * 2;
-            const speed = 2.2 + Math.random() * 4.5;
+            const elevation = (Math.random() - 0.2) * Math.PI * 0.5;
+            const speed = 3.5 + Math.random() * 5.5;
+
             const velocity = new THREE.Vector3(
-                Math.cos(angle) * speed,
-                2.8 + Math.random() * 4.5,
-                Math.sin(angle) * speed
-            );
-
-            this.particleGroup.add(p);
-            this.particles.push({
-                mesh: p,
-                velocity: velocity,
-                life: 1.0,
-                decay: 1.8 + Math.random() * 1.0,
-                gravity: -12.0
-            });
-        }
-    }
-
-    burstCrash(position) {
-        const count = 38;
-        const geo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-        const mat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.SNAKE_HEAD,
-            roughness: 0.35,
-            emissive: 0x059669,
-            emissiveIntensity: 0.3
-        });
-
-        for (let i = 0; i < count; i++) {
-            const p = new THREE.Mesh(geo, mat.clone());
-            p.position.copy(position);
-
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 3.2 + Math.random() * 5.5;
-            const velocity = new THREE.Vector3(
-                Math.cos(angle) * speed,
-                3.2 + Math.random() * 5.5,
-                Math.sin(angle) * speed
-            );
-
-            this.particleGroup.add(p);
-            this.particles.push({
-                mesh: p,
-                velocity: velocity,
-                life: 1.0,
-                decay: 1.2 + Math.random() * 0.8,
-                gravity: -14.0
-            });
-        }
-    }
-
-    burstTeleport(position) {
-        const count = 26;
-        const geo = new THREE.BoxGeometry(0.22, 0.22, 0.22);
-        const mat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.PARTICLE_WARP,
-            emissive: CONFIG.COLORS.PARTICLE_WARP,
-            emissiveIntensity: 0.9,
-            roughness: 0.2
-        });
-
-        for (let i = 0; i < count; i++) {
-            const p = new THREE.Mesh(geo, mat.clone());
-            p.position.copy(position);
-
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 2.8 + Math.random() * 5.0;
-            const velocity = new THREE.Vector3(
-                Math.cos(angle) * speed,
-                1.8 + Math.random() * 4.0,
-                Math.sin(angle) * speed
+                Math.cos(angle) * Math.cos(elevation) * speed,
+                Math.sin(elevation) * speed + 2.5,
+                Math.sin(angle) * Math.cos(elevation) * speed
             );
 
             this.particleGroup.add(p);
@@ -1166,35 +466,162 @@ class World3D {
                 velocity: velocity,
                 life: 1.0,
                 decay: 2.2 + Math.random() * 1.0,
-                gravity: -8.0
+                gravity: -10.0,
+                type: 'spark'
+            });
+        }
+
+        // 2. Anillo de onda expansiva holográfica (Shockwave Ring)
+        const ringGeo = new THREE.RingGeometry(0.2, 0.45, 24);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity: 0.9,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.copy(position);
+        ring.position.y = 0.08;
+        this.particleGroup.add(ring);
+
+        this.particles.push({
+            mesh: ring,
+            velocity: new THREE.Vector3(0, 0, 0),
+            scaleSpeed: 14.0,
+            life: 1.0,
+            decay: 3.5,
+            type: 'shockwave'
+        });
+    }
+
+    /**
+     * Explosión glitch de sobrecarga al colisionar
+     */
+    burstCrash(position) {
+        const count = 42;
+        const shardGeo = new THREE.BoxGeometry(0.26, 0.26, 0.26);
+
+        const matA = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.PARTICLE_MAGENTA,
+            emissive: CONFIG.COLORS.PARTICLE_MAGENTA,
+            emissiveIntensity: 1.4
+        });
+        const matB = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.PARTICLE_CYAN,
+            emissive: CONFIG.COLORS.PARTICLE_CYAN,
+            emissiveIntensity: 1.4
+        });
+
+        for (let i = 0; i < count; i++) {
+            const mat = Math.random() > 0.5 ? matA : matB;
+            const p = new THREE.Mesh(shardGeo, mat);
+            p.position.copy(position);
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 4.0 + Math.random() * 6.5;
+            const velocity = new THREE.Vector3(
+                Math.cos(angle) * speed,
+                3.5 + Math.random() * 6.0,
+                Math.sin(angle) * speed
+            );
+
+            this.particleGroup.add(p);
+            this.particles.push({
+                mesh: p,
+                velocity: velocity,
+                life: 1.0,
+                decay: 1.4 + Math.random() * 0.8,
+                gravity: -14.0,
+                rotSpeed: new THREE.Vector3(Math.random() * 10, Math.random() * 10, Math.random() * 10),
+                type: 'spark'
             });
         }
     }
 
     /**
-     * Actualiza el balanceo de brisa en el bosque, el paso de las nubes y las partículas
+     * Portal cuántico de teletransporte (Salto Warp a través de barreras)
+     */
+    burstTeleport(position) {
+        const count = 30;
+        const sparkGeo = new THREE.OctahedronGeometry(0.18, 0);
+        const mat = new THREE.MeshStandardMaterial({
+            color: CONFIG.COLORS.PARTICLE_SHIELD,
+            emissive: CONFIG.COLORS.PARTICLE_CYAN,
+            emissiveIntensity: 1.5
+        });
+
+        for (let i = 0; i < count; i++) {
+            const p = new THREE.Mesh(sparkGeo, mat);
+            p.position.copy(position);
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 3.0 + Math.random() * 5.0;
+            const velocity = new THREE.Vector3(
+                Math.cos(angle) * speed,
+                2.0 + Math.random() * 4.0,
+                Math.sin(angle) * speed
+            );
+
+            this.particleGroup.add(p);
+            this.particles.push({
+                mesh: p,
+                velocity: velocity,
+                life: 1.0,
+                decay: 2.0 + Math.random() * 1.0,
+                gravity: -8.0,
+                type: 'spark'
+            });
+        }
+
+        // Doble anillo warp expansivo
+        for (let r = 0; r < 2; r++) {
+            const ringGeo = new THREE.RingGeometry(0.3, 0.6, 24);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: CONFIG.COLORS.PARTICLE_CYAN,
+                transparent: true,
+                opacity: 0.95,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.copy(position);
+            ring.position.y = 0.1 + r * 0.1;
+            this.particleGroup.add(ring);
+
+            this.particles.push({
+                mesh: ring,
+                scaleSpeed: 16.0 + r * 6.0,
+                life: 1.0,
+                decay: 3.2,
+                type: 'shockwave'
+            });
+        }
+    }
+
+    /**
+     * Bucle de actualización a 60 FPS
      */
     update(delta, time = 0) {
-        // 1. Brisa viva sobre las copas de árboles y flores
-        if (this.windSwayables.length > 0) {
-            for (let i = 0; i < this.windSwayables.length; i++) {
-                const item = this.windSwayables[i];
-                item.object.rotation.z = item.baseRotZ + Math.sin(time * item.speed + item.phase) * item.amplitude;
+        // 1. Oscilación suave de las partículas de datos en el espacio
+        if (this.floatingMotes.length > 0) {
+            for (let i = 0; i < this.floatingMotes.length; i++) {
+                const m = this.floatingMotes[i];
+                m.mesh.position.y = m.baseY + Math.sin(time * m.wobbleSpeed + m.phase) * m.wobbleDist;
             }
         }
 
-        // 2. Movimiento suave de las nubes esponjosas
-        if (this.clouds.length > 0) {
-            for (let c = 0; c < this.clouds.length; c++) {
-                const cloud = this.clouds[c];
-                cloud.mesh.position.x += cloud.speed * delta * 2.0;
-                if (cloud.mesh.position.x > cloud.maxX) {
-                    cloud.mesh.position.x = cloud.minX;
-                }
+        // 2. Pulso de energía en los rayos de plasma
+        if (this.plasmaBeams.length > 0) {
+            const pulse = 0.75 + Math.sin(time * 6.0) * 0.25;
+            for (let b = 0; b < this.plasmaBeams.length; b++) {
+                this.plasmaBeams[b].material.emissiveIntensity = pulse;
             }
         }
 
-        // 3. Partículas
+        // 3. Física de partículas activas
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
             p.life -= p.decay * delta;
@@ -1205,17 +632,28 @@ class World3D {
                 p.mesh.material.dispose();
                 this.particles.splice(i, 1);
             } else {
-                p.velocity.y += p.gravity * delta;
-                p.mesh.position.addScaledVector(p.velocity, delta);
+                if (p.type === 'shockwave') {
+                    p.mesh.scale.addScalar(p.scaleSpeed * delta);
+                    p.mesh.material.opacity = p.life;
+                } else {
+                    p.velocity.y += p.gravity * delta;
+                    p.mesh.position.addScaledVector(p.velocity, delta);
 
-                if (p.mesh.position.y < 0.1) {
-                    p.mesh.position.y = 0.1;
-                    p.velocity.y *= -0.4;
-                    p.velocity.x *= 0.7;
-                    p.velocity.z *= 0.7;
+                    if (p.rotSpeed) {
+                        p.mesh.rotation.x += p.rotSpeed.x * delta;
+                        p.mesh.rotation.y += p.rotSpeed.y * delta;
+                    }
+
+                    // Rebote elástico contra la superficie de la arena
+                    if (p.mesh.position.y < 0.05) {
+                        p.mesh.position.y = 0.05;
+                        p.velocity.y *= -0.35;
+                        p.velocity.x *= 0.65;
+                        p.velocity.z *= 0.65;
+                    }
+
+                    p.mesh.scale.setScalar(Math.max(0.01, p.life));
                 }
-
-                p.mesh.scale.setScalar(p.life);
             }
         }
     }

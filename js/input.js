@@ -1,9 +1,10 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - CONTROL DE ENTRADA (4 DIRECCIONES)
+ * SNAKE 3D: CYBERNETIC PROTOCOL - CONTROLADOR DE ENTRADA & EVENTOS
  * ====================================================================
- * Captura teclado (WASD / Flechas), botones táctiles y pad direccional.
- * Valida giros prohibidos de 180° y amortigua entradas rápidas.
+ * Captura comandos por teclado (WASD, Flechas, P, ESC, C, M, R),
+ * controles táctiles y pad direccional digital.
+ * Amortigua giros de 180° imposibles y encola movimientos para respuesta instantánea.
  */
 
 class InputController {
@@ -16,6 +17,7 @@ class InputController {
         this.onPauseToggle = null;
         this.onCameraToggle = null;
         this.onRestart = null;
+        this.onMuteToggle = null;
 
         this.bindEvents();
     }
@@ -48,7 +50,7 @@ class InputController {
             return;
         }
 
-        // Cola máxima de 2 comandos por tick para respuesta instantánea
+        // Cola máxima de 2 comandos por tick para respuesta instantánea de alta precisión
         if (this.inputQueue.length < 2) {
             this.inputQueue.push(newDir);
             if (this.sound) this.sound.playTurn();
@@ -66,22 +68,30 @@ class InputController {
         const code = e.code;
         const key = e.key.toLowerCase();
 
-        // Control de pausa y cámara
+        // Pausa (ESC / P)
         if (code === 'KeyP' || key === 'escape') {
             e.preventDefault();
             if (this.onPauseToggle) this.onPauseToggle();
             return;
         }
 
+        // Alternar Cámara (C)
         if (code === 'KeyC') {
             e.preventDefault();
             if (this.onCameraToggle) this.onCameraToggle();
             return;
         }
 
-        if (code === 'Enter' || code === 'Space') {
+        // Alternar Sonido (M)
+        if (code === 'KeyM') {
+            e.preventDefault();
+            if (this.onMuteToggle) this.onMuteToggle();
+            return;
+        }
+
+        // Reinicio rápido (R)
+        if (code === 'KeyR') {
             if (this.onRestart) {
-                // Si la función de reinicio está activa
                 const consumed = this.onRestart();
                 if (consumed) {
                     e.preventDefault();
@@ -90,7 +100,18 @@ class InputController {
             }
         }
 
-        // 4 Direcciones Clásicas (WASD y Flechas)
+        // Enter o Barra Espaciadora en Game Over o Inicio
+        if (code === 'Enter' || code === 'Space') {
+            if (this.onRestart) {
+                const consumed = this.onRestart();
+                if (consumed) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+
+        // 4 Direcciones Cardinales (WASD y Flechas)
         switch (code) {
             case 'KeyW':
             case 'ArrowUp':

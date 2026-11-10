@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake 3D — Caja de Cartón en el Bosque</title>
+    <title>SNAKE 3D: Cybernetic Protocol</title>
+    <!-- Google Fonts: Orbitron & Rajdhani para estética Sci-Fi / Cyberpunk comercial -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -13,19 +17,19 @@
     <!-- Lienzo WebGL 3D -->
     <div id="canvas-container"></div>
 
-    <!-- HUD SUPERIOR EN TIEMPO REAL (ESTILO GOOGLE SNAKE) -->
-    <div class="hud-container">
+    <!-- HUD SUPERIOR CYBERNETIC (EN TIEMPO REAL) -->
+    <div class="hud-container hidden-hud">
         <div class="hud-panel">
             <div class="hud-item">
-                <span class="hud-icon">🍎</span>
+                <span class="hud-icon core-icon">🔴</span>
                 <div class="hud-meta">
-                    <span class="hud-label">Manzanas</span>
-                    <span id="hud-score" class="hud-value apple-val">0</span>
+                    <span class="hud-label">Puntaje</span>
+                    <span id="hud-score" class="hud-value score-val">0</span>
                 </div>
             </div>
 
             <div class="hud-item">
-                <span class="hud-icon">🏆</span>
+                <span class="hud-icon trophy-icon">🏆</span>
                 <div class="hud-meta">
                     <span class="hud-label">Récord</span>
                     <span id="hud-high-score" class="hud-value gold-val">0</span>
@@ -33,15 +37,15 @@
             </div>
 
             <div class="hud-item">
-                <span class="hud-icon">📏</span>
+                <span class="hud-icon level-icon">⚡</span>
                 <div class="hud-meta">
-                    <span class="hud-label">Longitud</span>
-                    <span id="hud-length" class="hud-value">3</span>
+                    <span class="hud-label">Nivel</span>
+                    <span id="hud-level" class="hud-value cyan-val">LVL 1</span>
                 </div>
             </div>
 
             <div class="hud-item">
-                <span class="hud-icon">⚡</span>
+                <span class="hud-icon speed-icon">🚀</span>
                 <div class="hud-meta">
                     <span class="hud-label">Velocidad</span>
                     <span id="hud-speed" class="hud-value">10%</span>
@@ -49,122 +53,319 @@
             </div>
 
             <div class="hud-item">
-                <span class="hud-icon">🧭</span>
+                <span class="hud-icon len-icon">📏</span>
                 <div class="hud-meta">
-                    <span class="hud-label">Dirección</span>
-                    <span id="hud-dir" class="hud-value">Derecha</span>
+                    <span class="hud-label">Longitud</span>
+                    <span id="hud-length" class="hud-value">3</span>
+                </div>
+            </div>
+
+            <div class="hud-item hud-dir-item">
+                <span class="hud-icon dir-icon">🧭</span>
+                <div class="hud-meta">
+                    <span class="hud-label">Vector</span>
+                    <span id="hud-dir" class="hud-value">ESTE</span>
                 </div>
             </div>
         </div>
 
         <div class="hud-controls">
-            <button id="btn-cam" class="hud-btn" title="Alternar Cámara [C]">
-                🎥 <span id="hud-cam-mode">3D CENITAL</span>
+            <button id="btn-hud-cam" class="hud-btn" title="Alternar Modo de Cámara [C]">
+                🎥 <span id="hud-cam-mode">3D TÁCTICA</span>
             </button>
-            <button id="btn-sound" class="hud-btn" title="Activar/Desactivar Sonido">
-                <span id="sound-icon">🔊</span>
+            <button id="btn-hud-sound" class="hud-btn" title="Alternar Audio [M]">
+                <span class="sound-toggle-icon">🔊</span>
             </button>
-            <button id="btn-pause" class="hud-btn" title="Pausar Juego [P / ESC]">
-                ⏸️ Pausa
+            <button id="btn-hud-pause" class="hud-btn" title="Pausar Protocolo [P / ESC]">
+                ⏸️ <span class="btn-text-responsive">Pausa</span>
+            </button>
+            <button id="btn-hud-menu" class="hud-btn btn-secondary-hud" title="Volver al Menú Principal">
+                ⌂ <span class="btn-text-responsive">Menú</span>
             </button>
         </div>
     </div>
 
-    <!-- BADGE FLOTANTE DE INMUNIDAD (MANZANA AZUL / POWER-UP) -->
+    <!-- BADGE FLOTANTE DE CAMBIO DE FASE CUÁNTICA (ESCUDO / INMUNIDAD) -->
     <div id="hud-immunity" class="hud-immunity-badge hidden">
-        <span class="immunity-icon">⚡</span>
-        <div class="immunity-text">
-            <span class="immunity-label">¡INMUNIDAD ACTIVA!</span>
-            <span class="immunity-countdown"><span id="immunity-timer">2.0</span>s</span>
+        <div class="immunity-icon-wrap">
+            <span class="immunity-icon">⚡</span>
+        </div>
+        <div class="immunity-body">
+            <div class="immunity-header">
+                <span class="immunity-label">ESCUDO CUÁNTICO ACTIVO</span>
+                <span class="immunity-countdown"><span id="immunity-timer">2.0</span>s</span>
+            </div>
+            <div class="immunity-progress-track">
+                <div id="immunity-progress-bar" class="immunity-progress-fill"></div>
+            </div>
         </div>
     </div>
 
-    <!-- GUÍA DE CONTROLES EN PANTALLA -->
+    <!-- GUÍA DE TECLAS RÁPIDA (INFERIOR IZQUIERDA) -->
     <div class="keyboard-guide">
         <div class="key-row">
-            <span class="kbd-badge">W / ↑</span> Arriba
-            <span class="kbd-badge">S / ↓</span> Abajo
+            <span class="kbd-badge">W / ↑</span>
+            <span class="kbd-badge">A / ←</span>
+            <span class="kbd-badge">S / ↓</span>
+            <span class="kbd-badge">D / →</span>
+            <span class="guide-desc">Navegación</span>
         </div>
         <div class="key-row">
-            <span class="kbd-badge">A / ←</span> Izquierda
-            <span class="kbd-badge">D / →</span> Derecha
-        </div>
-        <div class="key-row">
-            <span class="kbd-badge">C</span> Cámara | <span class="kbd-badge">P</span> Pausa
+            <span class="kbd-badge">C</span> Cámara
+            <span class="kbd-badge">P</span> Pausa
+            <span class="kbd-badge">M</span> Audio
+            <span class="kbd-badge">R</span> Reiniciar
         </div>
     </div>
 
-    <!-- PAD DIRECCIONAL 2D EN PANTALLA (4 BOTONES) -->
+    <!-- PAD DIRECCIONAL TÁCTIL CYBERNETIC -->
     <div class="dpad-container">
-        <span class="dpad-title">Control</span>
+        <span class="dpad-title">CONTROL TÁCTIL</span>
         <div class="dpad-cross">
-            <button id="btn-dir-up" class="dpad-btn dpad-up" title="Arriba">▲</button>
-            <button id="btn-dir-left" class="dpad-btn dpad-left" title="Izquierda">◀</button>
-            <button id="btn-dir-right" class="dpad-btn dpad-right" title="Derecha">▶</button>
-            <button id="btn-dir-down" class="dpad-btn dpad-down" title="Abajo">▼</button>
+            <button id="btn-dir-up" class="dpad-btn dpad-up" title="Norte">▲</button>
+            <button id="btn-dir-left" class="dpad-btn dpad-left" title="Oeste">◀</button>
+            <button id="btn-dir-right" class="dpad-btn dpad-right" title="Este">▶</button>
+            <button id="btn-dir-down" class="dpad-btn dpad-down" title="Sur">▼</button>
         </div>
     </div>
 
-    <!-- MODAL DE INICIO -->
-    <div id="start-screen" class="overlay-modal">
-        <div class="modal-card">
-            <h1 class="game-title">🐍 Snake 3D</h1>
-            <p class="game-subtitle">El gusanito en su caja de cartón rodeado de bosque, flores y manzanas 3D</p>
+    <!-- ====================================================================
+         1. MENÚ PRINCIPAL (START SCREEN CON FONDO 3D ANIMADO)
+         ==================================================================== -->
+    <div id="start-screen" class="overlay-modal menu-backdrop">
+        <div class="menu-card">
+            <div class="menu-header">
+                <div class="cyber-badge">PROYECTO CIBERNÉTICO v2.0</div>
+                <h1 class="menu-title">
+                    <span class="title-neon">SNAKE</span> <span class="title-accent">3D</span>
+                </h1>
+                <p class="menu-tagline">CYBERNETIC GRID PROTOCOL // NEXT-GEN 3D ARCADE</p>
+            </div>
 
-            <div class="modal-stats" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
-                <div class="stat-box">
-                    <span class="label">Caja de Cartón</span>
-                    <span class="val">18 × 18</span>
+            <!-- Tarjeta de Récord Personal -->
+            <div class="menu-highscore-card">
+                <div class="hs-icon">🏆</div>
+                <div class="hs-meta">
+                    <span class="hs-label">RÉCORD DEL SISTEMA</span>
+                    <span id="start-high-score" class="hs-value">0</span>
                 </div>
-                <div class="stat-box">
-                    <span class="label">Mejor Récord</span>
-                    <span id="start-high-score" class="val" style="color: var(--gold);">0</span>
+                <div class="hs-decor">
+                    <span class="hs-tag">MÁXIMA EFICIENCIA</span>
                 </div>
             </div>
 
-            <div style="font-size: 0.95rem; color: #475569; line-height: 1.6; margin-bottom: 24px; text-align: left; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 14px 18px;">
-                <p style="margin: 0 0 8px 0;">🎮 <strong>Controles:</strong> WASD / Flechas / Pad en pantalla. <strong>[C]</strong> Cámara, <strong>[P]</strong> Pausa.</p>
-                <p style="margin: 0 0 6px 0;">🍎 <strong>Manzana Roja:</strong> +1 punto y la serpiente crece.</p>
-                <p style="margin: 0 0 6px 0;">⚡ <strong>Manzana Azul (Power-Up):</strong> +2 puntos e <strong>Inmunidad de 2 segundos</strong> con contador en vivo. ¡El gusano se vuelve transparente, atraviesa su cuerpo y se teletransporta por las paredes estilo Nokia!</p>
-                <p style="margin: 0;">⭐ <strong>Manzana Dorada:</strong> +3 puntos (Bonus por tiempo limitado).</p>
+            <!-- Botones de Acción del Menú Principal -->
+            <div class="menu-actions">
+                <button id="btn-play" class="btn-cyber btn-play-pulse">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-label">INICIAR MISIÓN</span>
+                </button>
+                <button id="btn-instructions" class="btn-cyber btn-secondary">
+                    <span class="btn-icon">ℹ</span>
+                    <span class="btn-label">INSTRUCCIONES</span>
+                </button>
+                <button id="btn-settings" class="btn-cyber btn-secondary">
+                    <span class="btn-icon">⚙</span>
+                    <span class="btn-label">CONFIGURACIÓN</span>
+                </button>
             </div>
 
-            <button id="btn-start" class="btn-primary">▶ ¡JUGAR!</button>
+            <div class="menu-footer-hint">
+                Presiona <strong>[ESPACIO]</strong> o <strong>[ENTER]</strong> para despliegue rápido
+            </div>
         </div>
     </div>
 
-    <!-- MODAL DE GAME OVER -->
+    <!-- ====================================================================
+         2. MODAL DE INSTRUCCIONES Y PROTOCOLO
+         ==================================================================== -->
+    <div id="instructions-screen" class="overlay-modal hidden">
+        <div class="modal-card cyber-dialog">
+            <div class="dialog-header">
+                <h2 class="dialog-title">PROTOCOLO DE MISIÓN</h2>
+                <button class="btn-close-modal" title="Cerrar">✕</button>
+            </div>
+
+            <div class="dialog-content">
+                <div class="guide-grid">
+                    <div class="guide-card">
+                        <div class="guide-card-header">
+                            <span class="card-icon">🎮</span>
+                            <span class="card-title">CONTROLES DE VUELO</span>
+                        </div>
+                        <p class="guide-text">
+                            Pilota el chasis mecha por la cuadrícula con <strong>WASD</strong> o las <strong>Flechas Direccionales</strong>. En móviles utiliza el <strong>Pad Táctil</strong>.
+                        </p>
+                        <div class="guide-keys-list">
+                            <span><kbd>C</kbd> Cambiar Cámara</span>
+                            <span><kbd>P</kbd> o <kbd>ESC</kbd> Pausar</span>
+                            <span><kbd>M</kbd> Silenciar</span>
+                            <span><kbd>R</kbd> Reiniciar</span>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-card-header">
+                            <span class="card-icon">⚡</span>
+                            <span class="card-title">NÚCLEOS DE ENERGÍA</span>
+                        </div>
+                        <ul class="cores-list">
+                            <li>
+                                <strong class="color-red">🔴 Núcleo Carmesí (+1):</strong> Carga estándar. Extiende el cuerpo y acelera la velocidad.
+                            </li>
+                            <li>
+                                <strong class="color-gold">🟡 Núcleo Solar (+3):</strong> Bonus cuántico de alto rendimiento por tiempo limitado.
+                            </li>
+                            <li>
+                                <strong class="color-cyan">🔵 Orbe de Fase (+2):</strong> Inmunidad cuántica durante <strong>2.0 segundos</strong>. Te permite atravesar tu propio cuerpo y <strong>teletransportarte por las barreras estilo Nokia</strong> sin destruirte.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-card-header">
+                            <span class="card-icon">⚠️</span>
+                            <span class="card-title">BARRERAS Y COLISIONES</span>
+                        </div>
+                        <p class="guide-text">
+                            Las barreras perimetrales de plasma desintegran el chasis en modo normal. Evita colisionar con tus propios anillos de energía salvo que el <strong>Escudo de Fase Cuántica</strong> esté activo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-cyber btn-close-modal btn-dialog-action">
+                ENTENDIDO // CONTINUAR
+            </button>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         3. MODAL DE CONFIGURACIÓN
+         ==================================================================== -->
+    <div id="settings-screen" class="overlay-modal hidden">
+        <div class="modal-card cyber-dialog">
+            <div class="dialog-header">
+                <h2 class="dialog-title">CONFIGURACIÓN DEL SISTEMA</h2>
+                <button class="btn-close-modal" title="Cerrar">✕</button>
+            </div>
+
+            <div class="dialog-content">
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="setting-meta">
+                            <span class="setting-title">DIFICULTAD / VELOCIDAD</span>
+                            <span class="setting-desc">Regula el intervalo de refresco de la cuadrícula</span>
+                        </div>
+                        <select id="setting-difficulty" class="cyber-select">
+                            <option value="NORMAL">Normal (150ms)</option>
+                            <option value="HYPER">Hyper (120ms)</option>
+                            <option value="INSANE">Insane (90ms)</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-meta">
+                            <span class="setting-title">VOLUMEN MASTER</span>
+                            <span class="setting-desc">Nivel de los sintetizadores procedurales</span>
+                        </div>
+                        <div class="slider-wrap">
+                            <input type="range" id="setting-volume" min="0" max="100" value="70" class="cyber-slider">
+                        </div>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-meta">
+                            <span class="setting-title">AUDIO GENERAL</span>
+                            <span class="setting-desc">Habilitar / Silenciar efectos Web Audio</span>
+                        </div>
+                        <button id="setting-sound-toggle" class="btn-cyber-small">
+                            <span class="sound-toggle-icon">🔊</span> Alternar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-cyber btn-close-modal btn-dialog-action">
+                GUARDAR Y CERRAR
+            </button>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         4. MODAL DE PAUSA
+         ==================================================================== -->
+    <div id="pause-screen" class="overlay-modal hidden">
+        <div class="modal-card cyber-dialog pause-card">
+            <div class="dialog-header" style="justify-content: center;">
+                <h2 class="dialog-title">PROTOCOLO EN PAUSA</h2>
+            </div>
+            <p class="dialog-subtitle">SISTEMA EN ESPERA TEMPORAL</p>
+
+            <div class="menu-actions" style="margin-top: 15px;">
+                <button id="btn-resume" class="btn-cyber btn-play-pulse">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-label">REANUDAR [P]</span>
+                </button>
+                <button id="btn-restart-pause" class="btn-cyber btn-secondary">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-label">REINICIAR MISIÓN</span>
+                </button>
+                <button id="btn-menu-from-pause" class="btn-cyber btn-secondary">
+                    <span class="btn-icon">⌂</span>
+                    <span class="btn-label">MENÚ PRINCIPAL</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         5. MODAL DE GAME OVER
+         ==================================================================== -->
     <div id="game-over-screen" class="overlay-modal hidden">
-        <div class="modal-card">
-            <h1 class="game-title" style="color: #dc2626;">💥 ¡Fin del Juego!</h1>
-            <div id="go-cause" class="cause-badge">¡Chocaste contra las paredes de cartón!</div>
+        <div class="modal-card cyber-dialog game-over-card">
+            <div class="go-header">
+                <div class="go-icon-alert">💥</div>
+                <h1 class="go-title">SOBRECARGA CRÍTICA</h1>
+                <div id="go-cause" class="cause-badge">COLISIÓN CON BARRERA DE PLASMA</div>
+                <div id="go-new-record-badge" class="new-record-alert hidden">
+                    ★ ¡NUEVO RÉCORD DE SISTEMA ESTABLECIDO! ★
+                </div>
+            </div>
 
-            <div class="modal-stats">
+            <div class="modal-stats cyber-stats-grid">
                 <div class="stat-box">
-                    <span class="label">Manzanas</span>
-                    <span id="go-final-score" class="val" style="color: #ef4444;">0</span>
+                    <span class="label">Puntaje</span>
+                    <span id="go-final-score" class="val val-red">0</span>
                 </div>
                 <div class="stat-box">
                     <span class="label">Récord</span>
-                    <span id="go-high-score" class="val" style="color: #f59e0b;">0</span>
+                    <span id="go-high-score" class="val val-gold">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">Núcleos</span>
+                    <span id="go-cores" class="val val-cyan">0</span>
                 </div>
                 <div class="stat-box">
                     <span class="label">Longitud</span>
                     <span id="go-length" class="val">0</span>
                 </div>
+                <div class="stat-box">
+                    <span class="label">Tiempo</span>
+                    <span id="go-time" class="val">0s</span>
+                </div>
             </div>
 
-            <button id="btn-restart" class="btn-primary">🔄 Jugar de Nuevo [Enter]</button>
-        </div>
-    </div>
-
-    <!-- MODAL DE PAUSA -->
-    <div id="pause-screen" class="overlay-modal hidden">
-        <div class="modal-card">
-            <h1 class="game-title">⏸️ Pausa</h1>
-            <p class="game-subtitle">Tómate un respiro</p>
-
-            <button id="btn-resume" class="btn-primary" style="margin-top: 10px;">▶ Continuar [P]</button>
+            <div class="menu-actions">
+                <button id="btn-restart" class="btn-cyber btn-play-pulse">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-label">REINTENTAR [Enter]</span>
+                </button>
+                <button id="btn-menu-from-gameover" class="btn-cyber btn-secondary">
+                    <span class="btn-icon">⌂</span>
+                    <span class="btn-label">MENÚ PRINCIPAL</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -177,10 +378,5 @@
     <script src="js/food.js"></script>
     <script src="js/snake.js"></script>
     <script src="js/game.js"></script>
-
-    <script>
-        const hs = localStorage.getItem('snake3d_classic_highscore') || '0';
-        document.getElementById('start-high-score').textContent = hs;
-    </script>
 </body>
 </html>

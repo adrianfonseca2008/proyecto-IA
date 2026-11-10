@@ -1,10 +1,12 @@
 /**
  * ====================================================================
- * SNAKE 3D CLÁSICO - SISTEMA DE CÁMARA TIPO 2D/3D (TABLETOP PERSPECTIVE)
+ * SNAKE 3D: CYBERNETIC PROTOCOL - CONTROLADOR DE CÁMARA CINEMÁTICA
  * ====================================================================
- * Ofrece una vista clara y legible de todo el tablero plano de arena,
- * inclinada lo justo para apreciar la tridimensionalidad de las paredes,
- * las manzanas y el gusano verde sin desorientar al jugador.
+ * Gestiona perspectivas cinemáticas del juego:
+ * 1. ISOMETRIC_3D: Vista táctica 3D inclinada sin ángulos ciegos.
+ * 2. TOP_DOWN: Vista táctica radar 2D/3D con renderizado PBR completo.
+ * 3. CHASE_3D: Cámara en tercera persona dinámica con amortiguación suave.
+ * 4. Modo Órbita de Menú: Rotación cinemática suave para el fondo del menú.
  */
 
 class CameraManager {
@@ -16,9 +18,18 @@ class CameraManager {
         this.camera = new THREE.PerspectiveCamera(46, aspect, 0.5, 1000);
 
         this.mode = CONFIG.CAMERA_MODES.ISOMETRIC_3D;
-        this.setMode(CONFIG.CAMERA_MODES.ISOMETRIC_3D);
+        this.menuOrbitAngle = 0;
+        this.isMenuMode = true;
 
+        this.setMode(CONFIG.CAMERA_MODES.ISOMETRIC_3D);
         window.addEventListener('resize', () => this.handleResize());
+    }
+
+    setMenuMode(isMenu) {
+        this.isMenuMode = isMenu;
+        if (!isMenu) {
+            this.setMode(this.mode);
+        }
     }
 
     setMode(mode) {
@@ -28,19 +39,18 @@ class CameraManager {
         const maxDim = Math.max(totalW, totalH);
 
         if (this.mode === CONFIG.CAMERA_MODES.ISOMETRIC_3D) {
-            // Vista cenital inclinada en 3D (Ángulo óptimo estilo juego de mesa)
-            // Permite ver todo el tablero como en 2D, pero apreciando el relieve 3D de paredes y gusano
-            this.camera.position.set(0, maxDim * 1.35, maxDim * 0.95);
-            this.camera.lookAt(0, 0, 0);
+            // Vista isométrica 3D táctica óptima
+            this.camera.position.set(0, maxDim * 1.25, maxDim * 0.98);
+            this.camera.lookAt(0, -0.2, 0);
 
         } else if (this.mode === CONFIG.CAMERA_MODES.TOP_DOWN) {
-            // Vista completamente cenital / plana (Clásica 2D con render 3D)
-            this.camera.position.set(0, maxDim * 1.6, 0.001);
+            // Vista táctica cenital
+            this.camera.position.set(0, maxDim * 1.55, 0.001);
             this.camera.lookAt(0, 0, 0);
 
         } else if (this.mode === CONFIG.CAMERA_MODES.CHASE_3D) {
-            // Vista cercana detrás del gusano
-            this.camera.position.set(0, maxDim * 0.9, maxDim * 0.7);
+            // Vista de seguimiento dinámico
+            this.camera.position.set(0, maxDim * 0.75, maxDim * 0.65);
             this.camera.lookAt(0, 0, 0);
         }
     }
@@ -57,11 +67,35 @@ class CameraManager {
     }
 
     update(snake, delta) {
+        const totalW = CONFIG.GRID_WIDTH * CONFIG.CELL_SIZE;
+        const maxDim = totalW;
+
+        if (this.isMenuMode) {
+            // Suave órbita cinemática para el fondo del Menú Principal
+            this.menuOrbitAngle += delta * 0.18;
+            const dist = maxDim * 1.25;
+            const height = maxDim * 0.95;
+
+            this.camera.position.x = Math.sin(this.menuOrbitAngle) * dist;
+            this.camera.position.z = Math.cos(this.menuOrbitAngle) * dist;
+            this.camera.position.y = height + Math.sin(this.menuOrbitAngle * 0.5) * 2.0;
+            this.camera.lookAt(0, 0, 0);
+            return;
+        }
+
         if (this.mode === CONFIG.CAMERA_MODES.CHASE_3D && snake && snake.segments.length > 0) {
-            // Suave seguimiento del centro de masa del gusano
+            // Seguimiento suave del gusano en tercera persona
             const head = snake.getHeadWorldPosition();
-            const target = new THREE.Vector3(head.x * 0.4, 0, head.z * 0.4);
-            this.camera.lookAt(target);
+            const targetCamX = head.x * 0.35;
+            const targetCamZ = head.z * 0.35 + maxDim * 0.65;
+            const targetCamY = maxDim * 0.68;
+
+            this.camera.position.x += (targetCamX - this.camera.position.x) * (delta * 4.0);
+            this.camera.position.y += (targetCamY - this.camera.position.y) * (delta * 4.0);
+            this.camera.position.z += (targetCamZ - this.camera.position.z) * (delta * 4.0);
+
+            const lookTarget = new THREE.Vector3(head.x * 0.7, 0, head.z * 0.7);
+            this.camera.lookAt(lookTarget);
         }
     }
 
